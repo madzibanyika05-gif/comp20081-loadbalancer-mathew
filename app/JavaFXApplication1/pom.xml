@@ -123,4 +123,5 @@
             </plugin>
         </plugins>
     </build>
+    <name>JavaFXApplication1CSA</name>
 </project>

@@ -1,5 +1,6 @@
 package com.mycompany.javafxapplication1;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -66,12 +67,27 @@ public class SecondaryController {
         }
     }
 
-    public void initialise(String[] credentials) {
-        userTextField.setText(credentials[0]);
+    public void initialise(String username) {
+        userTextField.setText(username); //show username on the screen
+        try {
+    FileService.writeTextFile(
+        username,
+        "welcome.txt",
+        "Welcome " + username + "! Your storage is working."
+    );
+    String content = FileService.readTextFile(username, "welcome.txt");
+    customTextField.setText(content);//content
+    System.out.println(content);
+} catch (IOException e) {
+    e.printStackTrace();
+    customTextField.setText("ERROR: couldn't read/write file");
+}
+        System.out.print("Session.getUsername(): " + Session.getUsername()); //proof session is set
         DB myObj = new DB();
         ObservableList<User> data;
         try {
             data = myObj.getDataFromTable();
+            dataTableView.getColumns().clear();
             TableColumn user = new TableColumn("User");
         user.setCellValueFactory(
         new PropertyValueFactory<>("user"));
