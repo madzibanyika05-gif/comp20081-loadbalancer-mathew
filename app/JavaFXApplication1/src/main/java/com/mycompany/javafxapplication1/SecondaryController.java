@@ -65,6 +65,17 @@ public class SecondaryController {
             customTextField.setText("ERROR: could not delete file");
         }
     }
+    
+    @FXML
+    private void saveCustomData(ActionEvent event) {
+        try {
+            String username = Session.getUsername();
+            FileService.writeTextFile(username, "custom.txt", customTextField.getText());
+        } catch (IOException e) {
+            e.printStackTrace();
+            customTextField.setText("ERROR: could not save data");
+        }
+    }
         
     @FXML
     private void switchToPrimary(){
