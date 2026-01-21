@@ -30,7 +30,11 @@ public class FileService {
         Path file = userDir.resolve(filename);
         Files.writeString(file, content);
     }
-
+    
+    public static void deleteFile(String username, String filename) throws IOException {
+    Path file = userDir(username).resolve(filename);
+    Files.deleteIfExists(file);
+    }
     public static String readTextFile(String username, String filename)
             throws IOException {
 

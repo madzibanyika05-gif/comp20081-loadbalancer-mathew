@@ -1,5 +1,7 @@
 package com.mycompany.javafxapplication1;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,8 +44,26 @@ public class SecondaryController {
     
     @FXML
     private void RefreshBtnHandler(ActionEvent event){
-        Stage primaryStage = (Stage) customTextField.getScene().getWindow();
-        customTextField.setText((String)primaryStage.getUserData());
+        try {
+            String username = Session.getUsername();
+            String content = FileService.readTextFile(username, "welcome.txt");
+            customTextField.setText(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+            customTextField.setText("ERROR: couldn't read file");
+        }
+    }
+    
+    @FXML
+    private void deleteCustomFile() {
+        try {
+            String username = Session.getUsername();
+            FileService.deleteFile(username, "custom.txt");
+            customTextField.setText("");
+        } catch (IOException e) {
+            e.printStackTrace();
+            customTextField.setText("ERROR: could not delete file");
+        }
     }
         
     @FXML

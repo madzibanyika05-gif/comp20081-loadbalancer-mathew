@@ -40,6 +40,7 @@
          <children>
               <Button fx:id="secondaryButton" onAction="#switchToPrimary" text="Return to Login" GridPane.columnIndex="1" />
             <Button fx:id="refreshBtn" mnemonicParsing="false" onAction="#RefreshBtnHandler" text="Refresh" />
+            <Button text="Delete File" onAction="#deleteCustomFile"/>
          </children>
       </GridPane>
     </children>
