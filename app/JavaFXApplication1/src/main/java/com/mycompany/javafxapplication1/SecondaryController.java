@@ -46,7 +46,7 @@ public class SecondaryController {
     private void RefreshBtnHandler(ActionEvent event){
         try {
             String username = Session.getUsername();
-            String content = FileService.readTextFile(username, "welcome.txt");
+            String content = FileService.readTextFile(username, "custom.txt");
             customTextField.setText(content);
         } catch (IOException e) {
             e.printStackTrace();
@@ -106,13 +106,18 @@ public class SecondaryController {
         "welcome.txt",
         "Welcome " + username + "! Your storage is working."
     );
-    String content = FileService.readTextFile(username, "welcome.txt");
+    String content;
+        try {
+        content = FileService.readTextFile(username, "custom.txt");
+    } catch (IOException ex) {
+        content = FileService.readTextFile(username, "welcome.txt");
+    }
     customTextField.setText(content);//content
-    System.out.println(content);
-} catch (IOException e) {
-    e.printStackTrace();
+        System.out.println(content);
+    } catch (IOException e) {
+        e.printStackTrace();
     customTextField.setText("ERROR: couldn't read/write file");
-}
+    }
         System.out.print("Session.getUsername(): " + Session.getUsername()); //proof session is set
         DB myObj = new DB();
         ObservableList<User> data;
