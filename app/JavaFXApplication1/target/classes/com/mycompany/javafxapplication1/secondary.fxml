@@ -44,13 +44,6 @@
             <Button text="Save" onAction="#saveCustomData" />
          </children>
       </GridPane>
-      <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Refresh" onAction="#RefreshBtnHandler"/>
-        <Button text="Delete File" onAction="#deleteCustomFile"/>
-        <Button text="Save" onAction="#saveCustomData"/>
-        <Pane HBox.hgrow="ALWAYS"/>
-        <Button text="Return to Login" onAction="#switchToPrimary"/>
-    </HBox>
     </children>
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
