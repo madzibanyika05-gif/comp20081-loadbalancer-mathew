@@ -43,6 +43,12 @@ public class SecondaryController {
     private TextField customTextField;
     
     @FXML
+    private TextField fileNameField;
+    
+    @FXML
+    private javafx.scene.control.ListView<String> filesListView;
+    
+    @FXML
     private void RefreshBtnHandler(ActionEvent event){
         try {
             String username = Session.getUsername();
@@ -74,6 +80,33 @@ public class SecondaryController {
         } catch (IOException e) {
             e.printStackTrace();
             customTextField.setText("ERROR: could not save data");
+        }
+    }
+    
+    @FXML
+    private void refreshFileList() {
+        try {
+            String username = Session.getUsername();
+            java.util.List<String> files = FileService.listUserFiles(username); // we’ll add this if missing
+            filesListView.getItems().setAll(files);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void loadSelectedFile() {
+        try {
+            String username = Session.getUsername();
+            String file = filesListView.getSelectionModel().getSelectedItem();
+            if (file == null) return;
+
+            String content = FileService.readTextFile(username, file);
+            fileNameField.setText(file);
+            customTextField.setText(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+            customTextField.setText("ERROR: couldn't load file");
         }
     }
         
