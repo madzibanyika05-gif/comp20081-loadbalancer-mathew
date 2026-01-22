@@ -61,6 +61,7 @@ public class SecondaryController {
             }
 
             customTextField.setText(content);
+            refreshFileList();
         } catch (IOException e) {
             e.printStackTrace();
             customTextField.setText("ERROR: couldn't read file");
@@ -156,27 +157,32 @@ public class SecondaryController {
     }
 
     public void initialise(String username) {
-        userTextField.setText(username); //show username on the screen
+        userTextField.setText(username);
         try {
-    String content;
-        try {//attempt to show saved file
-            content = FileService.readTextFile(username, "custom.txt");
-        } catch (IOException ex) {
-        // If no custom yet, create + show welcome
-            FileService.writeTextFile(
-                username,
-                "welcome.txt",
-                "Welcome " + username + "! Your storage is working."
-            );
-            content = FileService.readTextFile(username, "welcome.txt");
+            if (!FileService.fileExists(username, "welcome.txt")) {// only create welcome.txt if it doesn't already exist
+                FileService.writeTextFile(
+                    username,
+                    "welcome.txt",
+                    "Welcome " + username + "! Your storage is working."
+                );
+            }
+
+            String content;
+            if (FileService.fileExists(username, "custom.txt")) {
+                content = FileService.readTextFile(username, "custom.txt");
+            } else {
+                content = FileService.readTextFile(username, "welcome.txt");
+            }
+
+            customTextField.setText(content);
+            refreshFileList();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            customTextField.setText("ERROR: couldn't read/write file");
         }
-        customTextField.setText(content);
-        System.out.println(content);
-        refreshFileList();
-    } catch (IOException e) {
-        e.printStackTrace();
-        customTextField.setText("ERROR: couldn't read/write file");
-    }
+
+    
         System.out.print("Session.getUsername(): " + Session.getUsername()); //proof session is set
         DB myObj = new DB();
         ObservableList<User> data;

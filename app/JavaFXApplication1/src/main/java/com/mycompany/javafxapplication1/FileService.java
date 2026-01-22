@@ -51,6 +51,15 @@ public class FileService {
     Files.writeString(file, content);
     }
     
+    public static boolean fileExists(String username, String filename) {
+        try {
+            Path file = userDir(username).resolve(filename);
+            return Files.exists(file);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+    
     public static java.util.List<String> listUserFiles(String username) throws IOException {
         java.nio.file.Path userDir = Configuration.STORAGE_LOCAL_DIR.resolve(username);
 
