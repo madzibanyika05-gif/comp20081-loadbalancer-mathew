@@ -26,6 +26,11 @@
             <TextField fx:id="userTextField" GridPane.columnIndex="1" />
             <Label text="Custom data" GridPane.rowIndex="1" />
             <TextField fx:id="customTextField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label text="Filename" GridPane.rowIndex="2" />
+            <TextField fx:id="fileNameField" GridPane.columnIndex="1" GridPane.rowIndex="2" promptText="notes.txt" />
+
+            <Label text="Files" GridPane.rowIndex="3" />
+            <ListView fx:id="filesListView" GridPane.columnIndex="1" GridPane.rowIndex="3" prefHeight="120.0" />
          </children>
       </GridPane>
       <TableView fx:id="dataTableView" prefHeight="200.0" prefWidth="200.0" />
@@ -42,8 +47,17 @@
             <Button fx:id="refreshBtn" mnemonicParsing="false" onAction="#RefreshBtnHandler" text="Refresh" />
             <Button text="Delete File" onAction="#deleteCustomFile"/>
             <Button text="Save" onAction="#saveCustomData" />
+            <Button text="Refresh Files" onAction="#refreshFileList" />
+            <Button text="Load Selected" onAction="#loadSelectedFile" />
          </children>
       </GridPane>
+      <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Refresh" onAction="#RefreshBtnHandler"/>
+        <Button text="Delete File" onAction="#deleteCustomFile"/>
+        <Button text="Save" onAction="#saveCustomData"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button text="Return to Login" onAction="#switchToPrimary"/>
+    </HBox>
     </children>
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />

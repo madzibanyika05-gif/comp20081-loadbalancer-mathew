@@ -8,6 +8,7 @@ package com.mycompany.javafxapplication1;
  *
  * @author ntu-user
  */
+import java.util.stream.Collectors;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,5 +49,21 @@ public class FileService {
     Path userDir = userDir(username); // make sures diactory exists
     Path file = userDir.resolve(filename);
     Files.writeString(file, content);
+    }
+    
+    public static java.util.List<String> listUserFiles(String username) throws IOException {
+        java.nio.file.Path userDir = Configuration.STORAGE_LOCAL_DIR.resolve(username);
+
+        if (!java.nio.file.Files.exists(userDir)) {
+            return java.util.Collections.emptyList();
+        }
+
+        try (java.util.stream.Stream<java.nio.file.Path> stream = java.nio.file.Files.list(userDir)) {
+            return stream
+                .filter(java.nio.file.Files::isRegularFile)
+                .map(p -> p.getFileName().toString())
+                .sorted()
+                .collect(Collectors.toList());
+        }
     }
 }
