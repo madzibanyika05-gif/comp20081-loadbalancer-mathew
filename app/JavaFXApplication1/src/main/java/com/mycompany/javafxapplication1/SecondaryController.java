@@ -52,7 +52,14 @@ public class SecondaryController {
     private void RefreshBtnHandler(ActionEvent event){
         try {
             String username = Session.getUsername();
-            String content = FileService.readTextFile(username, "custom.txt");
+            String content;
+
+            try {
+                content = FileService.readTextFile(username, "custom.txt");
+            } catch (IOException ex) {
+                content = FileService.readTextFile(username, "welcome.txt");
+            }
+
             customTextField.setText(content);
         } catch (IOException e) {
             e.printStackTrace();
@@ -88,8 +95,8 @@ public class SecondaryController {
             String file = fileNameField.getText().trim();
 
             if (file.isEmpty()) {
-                customTextField.setText("ERROR: filename required");
-                return;
+                file = "custom.txt";
+                fileNameField.setText(file);
             }
 
             FileService.writeTextFile(username, file, customTextField.getText());
@@ -151,22 +158,24 @@ public class SecondaryController {
     public void initialise(String username) {
         userTextField.setText(username); //show username on the screen
         try {
-    FileService.writeTextFile(
-        username,
-        "welcome.txt",
-        "Welcome " + username + "! Your storage is working."
-    );
     String content;
-        try {
-        content = FileService.readTextFile(username, "custom.txt");
-    } catch (IOException ex) {
-        content = FileService.readTextFile(username, "welcome.txt");
-    }
-    customTextField.setText(content);//content
+        try {//attempt to show saved file
+            content = FileService.readTextFile(username, "custom.txt");
+        } catch (IOException ex) {
+        // If no custom yet, create + show welcome
+            FileService.writeTextFile(
+                username,
+                "welcome.txt",
+                "Welcome " + username + "! Your storage is working."
+            );
+            content = FileService.readTextFile(username, "welcome.txt");
+        }
+        customTextField.setText(content);
         System.out.println(content);
+        refreshFileList();
     } catch (IOException e) {
         e.printStackTrace();
-    customTextField.setText("ERROR: couldn't read/write file");
+        customTextField.setText("ERROR: couldn't read/write file");
     }
         System.out.print("Session.getUsername(): " + Session.getUsername()); //proof session is set
         DB myObj = new DB();
