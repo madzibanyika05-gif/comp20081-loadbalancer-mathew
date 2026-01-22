@@ -64,8 +64,17 @@ public class SecondaryController {
     private void deleteCustomFile() {
         try {
             String username = Session.getUsername();
-            FileService.deleteFile(username, "custom.txt");
+
+            String file = fileNameField.getText().trim();
+            if (file.isEmpty()) {
+                file = filesListView.getSelectionModel().getSelectedItem();
+            }
+            if (file == null || file.trim().isEmpty()) return;
+
+            FileService.deleteFile(username, file);
             customTextField.setText("");
+            fileNameField.setText("");
+            refreshFileList();
         } catch (IOException e) {
             e.printStackTrace();
             customTextField.setText("ERROR: could not delete file");
@@ -76,7 +85,15 @@ public class SecondaryController {
     private void saveCustomData(ActionEvent event) {
         try {
             String username = Session.getUsername();
-            FileService.writeTextFile(username, "custom.txt", customTextField.getText());
+            String file = fileNameField.getText().trim();
+
+            if (file.isEmpty()) {
+                customTextField.setText("ERROR: filename required");
+                return;
+            }
+
+            FileService.writeTextFile(username, file, customTextField.getText());
+            refreshFileList();
         } catch (IOException e) {
             e.printStackTrace();
             customTextField.setText("ERROR: could not save data");
