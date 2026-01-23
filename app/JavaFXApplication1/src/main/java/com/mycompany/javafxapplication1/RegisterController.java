@@ -87,7 +87,7 @@ public class RegisterController {
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
         try {
             FXMLLoader loader = new FXMLLoader();
-            DB myObj = new DB();
+            MySQLDB myObj = new MySQLDB();
             if (passPasswordField.getText().equals(rePassPasswordField.getText())) {
                 myObj.addDataToDB(userTextField.getText(), passPasswordField.getText());
                 dialogue("Adding information to the database", "Successful!");

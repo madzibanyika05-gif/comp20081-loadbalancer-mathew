@@ -31,7 +31,7 @@ public class PrimaryController {
     private void registerBtnHandler(ActionEvent event) {
         Stage secondaryStage = new Stage();
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
-        DB myObj = new DB();
+        MySQLDB myObj = new MySQLDB();
 
         try {
             FXMLLoader loader = new FXMLLoader();
@@ -66,7 +66,7 @@ public class PrimaryController {
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
 
         try {
-            DB myObj = new DB();
+            MySQLDB myObj = new MySQLDB();
 
             String user = userTextField.getText().trim();
             String pass = passPasswordField.getText();
