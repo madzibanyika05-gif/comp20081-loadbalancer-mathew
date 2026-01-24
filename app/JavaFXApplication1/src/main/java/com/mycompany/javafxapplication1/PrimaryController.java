@@ -70,11 +70,12 @@ public class PrimaryController {
 
             String user = userTextField.getText().trim();
             String pass = passPasswordField.getText();
-
-            if (myObj.validateUser(user, pass)) {
+            
+            String role = myObj.getRoleIfValidLogin(user, pass);
+            if (role != null) {
 
                 // Session: store logged-in user (no password stored)
-                Session.login(user);
+                Session.login(user, role);
 
                 FXMLLoader loader = new FXMLLoader();
                 loader.setLocation(getClass().getResource("secondary.fxml"));
