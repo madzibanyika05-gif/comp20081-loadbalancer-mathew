@@ -76,6 +76,7 @@ public class PrimaryController {
 
                 // Session: store logged-in user (no password stored)
                 Session.login(user, role);
+                System.out.println("Logged in as: " + Session.getUsername() + " role=" + Session.getRole());
 
                 FXMLLoader loader = new FXMLLoader();
                 loader.setLocation(getClass().getResource("secondary.fxml"));

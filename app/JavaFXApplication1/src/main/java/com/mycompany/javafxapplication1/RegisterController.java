@@ -96,7 +96,7 @@ public class RegisterController {
                 
                 dialogue("Adding information to the database", "Successful!");
                 String user = userTextField.getText().trim();
-                Session.login(user);
+                Session.login(user, "USER");
                 loader.setLocation(getClass().getResource("secondary.fxml"));
                 Parent root = loader.load();
                 Scene scene = new Scene(root, 640, 480);

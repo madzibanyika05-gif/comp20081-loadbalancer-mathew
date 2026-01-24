@@ -48,16 +48,14 @@ public class MySQLDB {
         return false;
     }
         
-    public void addDataToDB(String username, String password) {
-        String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)";
-
-        String hash = PasswordUtil.hashPassword(password);
+    public void addDataToDB(String username, String passwordHash) {
+        String sql = "INSERT INTO users (username, password_hash, role) VALUES (?, ?, 'USER')";
 
         try (Connection conn = getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
-            stmt.setString(2, hash);
+            stmt.setString(2, passwordHash);
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -97,7 +95,7 @@ public class MySQLDB {
     
     public ObservableList<User> getDataFromMySQL() {
         ObservableList<User> data = FXCollections.observableArrayList();
-        String sql = "SELECT username, password_hash FROM users ORDER BY id";
+        String sql = "SELECT username, password_hash, role FROM users ORDER BY id";
 
         try (Connection conn = getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -106,14 +104,39 @@ public class MySQLDB {
             while (rs.next()) {
                 data.add(new User(
                         rs.getString("username"),
-                        rs.getString("password_hash")
+                        rs.getString("password_hash"),
+                        rs.getString("role")
                 ));
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return data;
+    }
+    
+    public String getRoleIfValidLogin(String username, String passwordPlain) {
+        String sql = "SELECT password_hash, role FROM users WHERE username = ? LIMIT 1";
+
+        try (Connection conn = getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String storedHash = rs.getString("password_hash");
+                String role = rs.getString("role");   // USER / ADMIN
+
+                if (PasswordUtil.verifyPassword(passwordPlain, storedHash)) {
+                    return role; //login ok, return role
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null; //login failed
     }
 }
