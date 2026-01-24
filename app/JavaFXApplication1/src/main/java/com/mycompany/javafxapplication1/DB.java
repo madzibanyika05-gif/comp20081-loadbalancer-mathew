@@ -170,7 +170,7 @@ public class DB {
             ResultSet rs = statement.executeQuery("select * from " + this.dataBaseTableName);
             while (rs.next()) {
                 // read the result set
-                result.add(new User(rs.getString("name"),rs.getString("password")));
+                result.add(new User(rs.getString("name"),rs.getString("password"), "LOCAL"));
             }
             
         } catch (SQLException ex) {

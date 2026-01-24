@@ -154,8 +154,16 @@ public class SecondaryController {
             e.printStackTrace();
         }
     }
-
+    
+    private void applyRolePermissions() {
+        if (!Session.isAdmin()) {
+            dataTableView.setVisible(false);
+            dataTableView.setManaged(false);
+        }
+    }
+    
     public void initialise(String username) {
+        applyRolePermissions();
         userTextField.setText(username);
         try {
             if (!FileService.fileExists(username, "welcome.txt")) {// only create welcome.txt if it doesn't already exist
@@ -199,7 +207,15 @@ public class SecondaryController {
         TableColumn<User, String> passCol = new TableColumn<>("Pass");
         passCol.setCellValueFactory(new PropertyValueFactory<>("pass"));
 
+        TableColumn<User, String> roleCol = new TableColumn<>("Role");
+        roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
+
         dataTableView.setItems(data);
-        dataTableView.getColumns().addAll(userCol, passCol);
+
+        if (Session.isAdmin()) {
+            dataTableView.getColumns().addAll(userCol, passCol, roleCol);
+        } else {
+            dataTableView.getColumns().add(userCol);
+        }
     }
 }
