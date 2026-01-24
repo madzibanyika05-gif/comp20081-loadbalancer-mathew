@@ -1,13 +1,12 @@
 package com.mycompany.javafxapplication1;
 
+import com.mycompany.javafxapplication1.MySQLDB;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -184,22 +183,23 @@ public class SecondaryController {
 
     
         System.out.print("Session.getUsername(): " + Session.getUsername()); //proof session is set
-        DB myObj = new DB();
-        ObservableList<User> data;
-        try {
-            data = myObj.getDataFromTable();
-            dataTableView.getColumns().clear();
-            TableColumn user = new TableColumn("User");
-        user.setCellValueFactory(
-        new PropertyValueFactory<>("user"));
-
-        TableColumn pass = new TableColumn("Pass");
-        pass.setCellValueFactory(
-            new PropertyValueFactory<>("pass"));
-        dataTableView.setItems(data);
-        dataTableView.getColumns().addAll(user, pass);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(SecondaryController.class.getName()).log(Level.SEVERE, null, ex);
+        MySQLDB myObj = new MySQLDB();
+        ObservableList<User> data = myObj.getDataFromMySQL();
+        
+        System.out.println("MySQL users loaded: " + data.size());
+        for (User u : data) {
+            System.out.println(" - " + u.getUser());
         }
+
+        dataTableView.getColumns().clear();
+
+        TableColumn<User, String> userCol = new TableColumn<>("User");
+        userCol.setCellValueFactory(new PropertyValueFactory<>("user"));
+
+        TableColumn<User, String> passCol = new TableColumn<>("Pass");
+        passCol.setCellValueFactory(new PropertyValueFactory<>("pass"));
+
+        dataTableView.setItems(data);
+        dataTableView.getColumns().addAll(userCol, passCol);
     }
 }

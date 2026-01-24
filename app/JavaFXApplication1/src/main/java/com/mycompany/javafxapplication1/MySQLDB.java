@@ -14,6 +14,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class MySQLDB {
 
@@ -91,5 +93,27 @@ public class MySQLDB {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public ObservableList<User> getDataFromMySQL() {
+        ObservableList<User> data = FXCollections.observableArrayList();
+        String sql = "SELECT username, password_hash FROM users ORDER BY id";
+
+        try (Connection conn = getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                data.add(new User(
+                        rs.getString("username"),
+                        rs.getString("password_hash")
+                ));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return data;
     }
 }
