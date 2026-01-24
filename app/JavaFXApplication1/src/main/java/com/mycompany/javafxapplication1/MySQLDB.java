@@ -8,6 +8,7 @@ package com.mycompany.javafxapplication1;
  *
  * @author ntu-user
  */
+import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -24,39 +25,63 @@ public class MySQLDB {
         return DriverManager.getConnection(URL, USER, PASS);
     }
 
-    public boolean validateUser(String username, String passwordHash) {
-        String sql = "SELECT 1 FROM users WHERE username = ? AND password_hash = ? LIMIT 1";
+    public boolean validateUser(String username, String password) {
+        String sql = "SELECT password_hash FROM users WHERE username = ?";
 
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
-            stmt.setString(2, passwordHash);
 
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
+                if (rs.next()) {
+                    String storedHash = rs.getString("password_hash");
+                    return PasswordUtil.verifyPassword(password, storedHash);
+                }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
-
-    public void addDataToDB(String username, String passwordHash) {
+        
+    public void addDataToDB(String username, String password) {
         String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)";
 
+        String hash = PasswordUtil.hashPassword(password);
+
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
-            stmt.setString(2, passwordHash);
+            stmt.setString(2, hash);
             stmt.executeUpdate();
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+    
+    public void ensureSchema() {
+            String sql =
+                "CREATE TABLE IF NOT EXISTS users (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "username VARCHAR(50) UNIQUE NOT NULL, " +
+                "password_hash VARCHAR(255) NOT NULL, " +
+                "role VARCHAR(10) NOT NULL DEFAULT 'USER', " +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                ")";
+
+            try (Connection conn = getConnection();
+                Statement stmt = conn.createStatement()) {
+
+                stmt.execute(sql);
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     
     public static void main(String[] args) {
         try {

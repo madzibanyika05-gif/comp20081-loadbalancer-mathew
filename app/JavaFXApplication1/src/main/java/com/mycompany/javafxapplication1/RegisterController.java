@@ -89,7 +89,11 @@ public class RegisterController {
             FXMLLoader loader = new FXMLLoader();
             MySQLDB myObj = new MySQLDB();
             if (passPasswordField.getText().equals(rePassPasswordField.getText())) {
-                myObj.addDataToDB(userTextField.getText(), passPasswordField.getText());
+                String username = userTextField.getText().trim();
+                String password = passPasswordField.getText();
+                String hashed = PasswordUtil.hashPassword(password);
+                myObj.addDataToDB(username, hashed);
+                
                 dialogue("Adding information to the database", "Successful!");
                 String user = userTextField.getText().trim();
                 Session.login(user);
