@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
+import com.mycompany.javafxapplication1.AppLogger;
 
 /**
  * JavaFX App
@@ -15,11 +16,11 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
 
-        // ✅ Ensure MySQL table exists
+        //Ensure MySQL table exists
         MySQLDB mysql = new MySQLDB();
         mysql.ensureSchema();
-
-        // ✅ Load login screen
+        AppLogger.info("APPLICATION STARTED");
+        //Load login screen
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("primary.fxml"));
         Parent root = loader.load();
