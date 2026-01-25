@@ -7,6 +7,7 @@ com/mycompany/javafxapplication1/PasswordUtil.class
 module-info.class
 com/mycompany/javafxapplication1/App.class
 com/mycompany/javafxapplication1/PrimaryController.class
+com/mycompany/javafxapplication1/AppLogger.class
 com/mycompany/javafxapplication1/DB.class
 com/mycompany/javafxapplication1/User.class
 com/mycompany/javafxapplication1/SecondaryController.class

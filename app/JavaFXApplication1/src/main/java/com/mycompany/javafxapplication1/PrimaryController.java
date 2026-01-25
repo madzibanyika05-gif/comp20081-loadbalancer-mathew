@@ -1,5 +1,6 @@
 package com.mycompany.javafxapplication1;
 
+import com.mycompany.javafxapplication1.AppLogger;
 import com.mycompany.javafxapplication1.Session;
 import java.util.Optional;
 import javafx.fxml.FXML;
@@ -32,6 +33,7 @@ public class PrimaryController {
         Stage secondaryStage = new Stage();
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
         MySQLDB myObj = new MySQLDB();
+        AppLogger.info("OPEN REGISTER SCREEN");
 
         try {
             FXMLLoader loader = new FXMLLoader();
@@ -43,6 +45,7 @@ public class PrimaryController {
             secondaryStage.show();
             primaryStage.close();
         } catch (Exception e) {
+            AppLogger.error("OPEN REGISTER SCREEN ERROR", e);
             e.printStackTrace();
         }
     }
@@ -70,13 +73,15 @@ public class PrimaryController {
 
             String user = userTextField.getText().trim();
             String pass = passPasswordField.getText();
+            AppLogger.info("LOGIN ATTEMPT user=" + user);
             
             String role = myObj.getRoleIfValidLogin(user, pass);
+
             if (role != null) {
 
-                // Session: store logged-in user (no password stored)
                 Session.login(user, role);
-                System.out.println("Logged in as: " + Session.getUsername() + " role=" + Session.getRole());
+
+                AppLogger.info("LOGIN success user=" + Session.getUsername() + " role=" + Session.getRole());
 
                 FXMLLoader loader = new FXMLLoader();
                 loader.setLocation(getClass().getResource("secondary.fxml"));
@@ -85,19 +90,20 @@ public class PrimaryController {
                 secondaryStage.setScene(scene);
 
                 SecondaryController controller = loader.getController();
-                controller.initialise(user);   // pass only username
+                controller.initialise(user);
 
                 secondaryStage.setTitle("Show Users");
-                String msg = "some data sent from Primary Controller";
-                secondaryStage.setUserData(msg);
+                secondaryStage.setUserData("some data sent from Primary Controller");
                 secondaryStage.show();
                 primaryStage.close();
 
             } else {
+                AppLogger.warn("LOGIN failed user=" + user);
                 dialogue("Invalid User Name / Password", "Please try again!");
             }
 
         } catch (Exception e) {
+            AppLogger.error("LOGIN ERROR", e);
             e.printStackTrace();
         }
     }

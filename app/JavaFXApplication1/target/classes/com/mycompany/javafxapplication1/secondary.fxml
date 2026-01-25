@@ -57,6 +57,7 @@
         <Button text="Save" onAction="#saveCustomData"/>
         <Pane HBox.hgrow="ALWAYS"/>
         <Button text="Return to Login" onAction="#switchToPrimary"/>
+        <Button fx:id="deleteUserBtn" text="Delete Selected User" onAction="#deleteSelectedUser"/>
     </HBox>
     </children>
     <padding>

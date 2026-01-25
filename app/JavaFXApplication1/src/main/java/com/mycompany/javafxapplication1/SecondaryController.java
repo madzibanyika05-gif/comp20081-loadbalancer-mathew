@@ -21,6 +21,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import com.mycompany.javafxapplication1.AppLogger;
+import com.mycompany.javafxapplication1.Session;
 
 
 
@@ -46,6 +48,9 @@ public class SecondaryController {
     
     @FXML
     private javafx.scene.control.ListView<String> filesListView;
+    
+    @FXML
+    private Button deleteUserBtn;
     
     @FXML
     private void RefreshBtnHandler(ActionEvent event){
@@ -155,15 +160,41 @@ public class SecondaryController {
         }
     }
     
-    private void applyRolePermissions() {
+    @FXML
+    private void deleteSelectedUser(ActionEvent event) {
         if (!Session.isAdmin()) {
-            dataTableView.setVisible(false);
-            dataTableView.setManaged(false);
+            AppLogger.warn("ACCESS DENIED delete user attempt by " + Session.getUsername());
+            return;
+        }
+
+        User selected = (User) dataTableView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            AppLogger.warn("DELETE USER clicked but nothing selected.");
+            return;
+        }
+
+        String target = selected.getUser();
+
+        // don't let admin delete themselves (avoids locking yourself out)
+        if (target.equalsIgnoreCase(Session.getUsername())) {
+            AppLogger.warn("ADMIN tried to delete self: " + target);
+            return;
+        }
+
+        MySQLDB db = new MySQLDB();
+        boolean ok = db.deleteUser(target);
+
+        if (ok) {
+            AppLogger.info("USER DELETED: " + target + " by " + Session.getUsername());
+            // refresh table
+            ObservableList<User> data = db.getDataFromMySQL();
+            dataTableView.setItems(data);
+        } else {
+            AppLogger.warn("DELETE USER failed for: " + target);
         }
     }
     
     public void initialise(String username) {
-        applyRolePermissions();
         userTextField.setText(username);
         try {
             if (!FileService.fileExists(username, "welcome.txt")) {// only create welcome.txt if it doesn't already exist
@@ -189,8 +220,20 @@ public class SecondaryController {
             customTextField.setText("ERROR: couldn't read/write file");
         }
 
-    
+        
         System.out.print("Session.getUsername(): " + Session.getUsername()); //proof session is set
+        //role based access
+        if (!Session.isAdmin()) {
+            AppLogger.warn("ACCESS: non-admin tried to view user table. user=" 
+                + Session.getUsername() + " role=" + Session.getRole());
+
+            dataTableView.setVisible(false);
+            dataTableView.setManaged(false);
+            deleteUserBtn.setVisible(false);
+            deleteUserBtn.setManaged(false);
+            return;
+        }
+        
         MySQLDB myObj = new MySQLDB();
         ObservableList<User> data = myObj.getDataFromMySQL();
         
@@ -211,11 +254,6 @@ public class SecondaryController {
         roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
 
         dataTableView.setItems(data);
-
-        if (Session.isAdmin()) {
-            dataTableView.getColumns().addAll(userCol, passCol, roleCol);
-        } else {
-            dataTableView.getColumns().add(userCol);
-        }
+        dataTableView.getColumns().addAll(userCol, passCol, roleCol);
     }
 }

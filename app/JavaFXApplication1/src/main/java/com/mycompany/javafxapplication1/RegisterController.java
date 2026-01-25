@@ -23,6 +23,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import com.mycompany.javafxapplication1.AppLogger;
 
 /**
  * FXML Controller class
@@ -85,28 +86,32 @@ public class RegisterController {
     private void registerBtnHandler(ActionEvent event) {
         Stage secondaryStage = new Stage();
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
+        
+        String username = userTextField.getText().trim();
+        AppLogger.info("REGISTER attempt user=" + username);
+        
         try {
             FXMLLoader loader = new FXMLLoader();
             MySQLDB myObj = new MySQLDB();
             if (passPasswordField.getText().equals(rePassPasswordField.getText())) {
-                String username = userTextField.getText().trim();
                 String password = passPasswordField.getText();
                 String hashed = PasswordUtil.hashPassword(password);
                 myObj.addDataToDB(username, hashed);
+                AppLogger.info("REGISTER success user=" + username + " role=USER");
                 
                 dialogue("Adding information to the database", "Successful!");
-                String user = userTextField.getText().trim();
-                Session.login(user, "USER");
+                Session.login(username, "USER");
                 loader.setLocation(getClass().getResource("secondary.fxml"));
                 Parent root = loader.load();
                 Scene scene = new Scene(root, 640, 480);
                 secondaryStage.setScene(scene);
                 SecondaryController controller = loader.getController();
                 secondaryStage.setTitle("Show users");
-                controller.initialise(user);
+                controller.initialise(username);
                 String msg = "some data sent from Register Controller";
                 secondaryStage.setUserData(msg);
             } else {
+                AppLogger.warn("REGISTRATION FAILED (password mismatch) for user: " + userTextField.getText().trim());
                 loader.setLocation(getClass().getResource("register.fxml"));
                 Parent root = loader.load();
                 Scene scene = new Scene(root, 640, 480);
@@ -117,6 +122,7 @@ public class RegisterController {
             primaryStage.close();
 
         } catch (Exception e) {
+            AppLogger.error("REGISTER ERROR user=" + username, e);
             e.printStackTrace();
         }
     }
@@ -136,6 +142,7 @@ public class RegisterController {
             primaryStage.close();
 
         } catch (Exception e) {
+            AppLogger.error("REGISTER CONTROLLER ERROR", e);
             e.printStackTrace();
         }
     }

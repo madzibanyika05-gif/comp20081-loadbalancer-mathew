@@ -139,4 +139,20 @@ public class MySQLDB {
 
         return null; //login failed
     }
+    
+    public boolean deleteUser(String username) {
+        String sql = "DELETE FROM users WHERE username = ?";
+
+        try (Connection conn = getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
