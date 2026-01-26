@@ -166,7 +166,7 @@ public class SecondaryController {
             AppLogger.warn("ACCESS DENIED delete user attempt by " + Session.getUsername());
             return;
         }
-
+        
         User selected = (User) dataTableView.getSelectionModel().getSelectedItem();
         if (selected == null) {
             AppLogger.warn("DELETE USER clicked but nothing selected.");
@@ -194,7 +194,20 @@ public class SecondaryController {
         }
     }
     
+    private void applyRolePermissions() {
+        boolean admin = Session.isAdmin();
+
+    //data table shws on admin
+        dataTableView.setVisible(admin);
+        dataTableView.setManaged(admin);
+
+    //user delte shows on admin
+        deleteUserBtn.setVisible(admin);
+        deleteUserBtn.setManaged(admin);
+    }
+    
     public void initialise(String username) {
+        applyRolePermissions();
         userTextField.setText(username);
         try {
             if (!FileService.fileExists(username, "welcome.txt")) {// only create welcome.txt if it doesn't already exist
@@ -226,11 +239,6 @@ public class SecondaryController {
         if (!Session.isAdmin()) {
             AppLogger.warn("ACCESS: non-admin tried to view user table. user=" 
                 + Session.getUsername() + " role=" + Session.getRole());
-
-            dataTableView.setVisible(false);
-            dataTableView.setManaged(false);
-            deleteUserBtn.setVisible(false);
-            deleteUserBtn.setManaged(false);
             return;
         }
         

@@ -23,22 +23,30 @@ public class FileService {
         Files.createDirectories(dir);
         return dir;
     }
-
+    
+    private static void validateFilename(String filename) {
+        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+            throw new SecurityException("Invalid filename");
+        }
+    }
+    
     public static void writeTextFile(String username, String filename, String content)
             throws IOException {
-
+        validateFilename(filename);
         Path userDir = userDir(username);
         Path file = userDir.resolve(filename);
         Files.writeString(file, content);
     }
     
     public static void deleteFile(String username, String filename) throws IOException {
-    Path file = userDir(username).resolve(filename);
-    Files.deleteIfExists(file);
+        validateFilename(filename);
+        Path file = userDir(username).resolve(filename);
+        Files.deleteIfExists(file);
     }
+    
     public static String readTextFile(String username, String filename)
             throws IOException {
-
+        validateFilename(filename);
         Path file = userDir(username).resolve(filename);
         return Files.readString(file);
     }

@@ -95,6 +95,28 @@ public class RegisterController {
             MySQLDB myObj = new MySQLDB();
             if (passPasswordField.getText().equals(rePassPasswordField.getText())) {
                 String password = passPasswordField.getText();
+                
+                // username empty
+                if (username.isBlank()) {
+                    AppLogger.warn("REGISTRATION FAILED: blank username");
+                    dialogue("Registration failed", "Username cannot be empty");
+                    return;
+                }
+
+                // weak password
+                if (password.isBlank() || password.length() < 6) {
+                    AppLogger.warn("REGISTRATION FAILED: weak password user=" + username);
+                    dialogue("Registration failed", "Password must be at least 6 characters");
+                    return;
+                }
+
+                // duplicate username
+                if (myObj.userExists(username)) {
+                    AppLogger.warn("REGISTRATION FAILED: duplicate username user=" + username);
+                    dialogue("Registration failed", "Username already exists");
+                    return;
+                }
+                
                 String hashed = PasswordUtil.hashPassword(password);
                 myObj.addDataToDB(username, hashed);
                 AppLogger.info("REGISTER success user=" + username + " role=USER");

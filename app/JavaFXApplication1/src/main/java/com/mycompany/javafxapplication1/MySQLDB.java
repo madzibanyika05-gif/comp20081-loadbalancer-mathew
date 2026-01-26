@@ -140,6 +140,23 @@ public class MySQLDB {
         return null; //login failed
     }
     
+    public boolean userExists(String username) {
+        String sql = "SELECT 1 FROM users WHERE username = ? LIMIT 1";
+
+        try (Connection conn = getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     public boolean deleteUser(String username) {
         String sql = "DELETE FROM users WHERE username = ?";
 
