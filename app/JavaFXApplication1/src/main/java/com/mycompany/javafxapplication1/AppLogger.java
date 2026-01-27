@@ -41,4 +41,8 @@ public class AppLogger {
     public static void error(String msg, Exception e) {
         writeLine("ERROR", msg + " | " + e.getClass().getSimpleName() + ": " + e.getMessage());
     }
+    
+    public static void metric(String name, long ms) {
+        writeLine("METRIC", name + " took " + ms + "ms");
+    }
 }
