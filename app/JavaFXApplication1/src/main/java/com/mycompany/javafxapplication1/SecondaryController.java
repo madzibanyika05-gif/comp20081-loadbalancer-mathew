@@ -141,11 +141,13 @@ public class SecondaryController {
         
     @FXML
     private void switchToPrimary(){
+
+        AppLogger.info("LOGOUT user=" + Session.getUsername());
+        Session.logout();
+
         Stage secondaryStage = new Stage();
         Stage primaryStage = (Stage) secondaryButton.getScene().getWindow();
         try {
-            
-        
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("primary.fxml"));
             Parent root = loader.load();
@@ -154,7 +156,6 @@ public class SecondaryController {
             secondaryStage.setTitle("Login");
             secondaryStage.show();
             primaryStage.close();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -207,6 +208,11 @@ public class SecondaryController {
     }
     
     public void initialise(String username) {
+        if (!Session.isLoggedIn()) {
+            AppLogger.warn("ACCESS BLOCKED: unauthenticated access attempt");
+            switchToPrimary();
+            return;
+        }
         applyRolePermissions();
         userTextField.setText(username);
         try {
