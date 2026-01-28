@@ -22,6 +22,7 @@ public class FileService {
     private static final ConcurrentHashMap<String, Object> USER_LOCKS = new ConcurrentHashMap<>();
 
     private static Object lockForUser(String username) {
+        
         return USER_LOCKS.computeIfAbsent(username, u -> new Object());
     }
     
@@ -43,35 +44,44 @@ public class FileService {
     
     public static void writeTextFile(String username, String filename, String content)
             throws IOException {
-
+        
+        long t = Metrics.start();
         long t0 = System.nanoTime();
         synchronized (lockForUser(username)) {
+            validateFilename(filename);
             Path userDir = userDir(username);
             Path file = userDir.resolve(filename);
             Files.writeString(file, content);
         }
         AppLogger.metric("FILE_WRITE user=" + username + " file=" + filename, msSince(t0));
+        Metrics.end("file.write", t);
     }
     
     public static void deleteFile(String username, String filename) throws IOException {
+        long t = Metrics.start();
         long t0 = System.nanoTime();
         synchronized (lockForUser(username)) {
+            validateFilename(filename);
             Path file = userDir(username).resolve(filename);
             Files.deleteIfExists(file);
         }
         AppLogger.metric("FILE_DELETE user=" + username + " file=" + filename, msSince(t0));
+        Metrics.end("file.delete", t);
     }
     
     public static String readTextFile(String username, String filename)
             throws IOException {
-
+        
+        long t = Metrics.start();
         long t0 = System.nanoTime();
         String out;
         synchronized (lockForUser(username)) {
+            validateFilename(filename);
             Path file = userDir(username).resolve(filename);
             out = Files.readString(file);
         }
         AppLogger.metric("FILE_READ user=" + username + " file=" + filename, msSince(t0));
+        Metrics.end("file.read", t);
         return out;
     }
     
@@ -93,6 +103,7 @@ public class FileService {
     }
     
     public static java.util.List<String> listUserFiles(String username) throws IOException {
+        long t = Metrics.start();
         long t0 = System.nanoTime();
         java.util.List<String> files;
 
@@ -113,6 +124,7 @@ public class FileService {
         }
 
         AppLogger.metric("FILE_LIST user=" + username, msSince(t0));
+        Metrics.end("file.list", t);
         return files;
     }
 }
