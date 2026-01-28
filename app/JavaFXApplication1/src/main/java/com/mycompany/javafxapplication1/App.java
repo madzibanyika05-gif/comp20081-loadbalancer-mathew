@@ -19,14 +19,38 @@ public class App extends Application {
         //Ensure MySQL table exists
         MySQLDB mysql = new MySQLDB();
         mysql.ensureSchema();
-        AppLogger.info("APPLICATION STARTED");
-        //Load login screen
+        LocalSQLiteDB.ensureSchema();
+        LocalSQLiteDB.SessionData saved = LocalSQLiteDB.loadSession(); //session restore
+        if (saved != null) {
+            Session.login(saved.username(), saved.role());
+            AppLogger.info(
+                "SESSION RESTORED user=" + saved.username() + " role=" + saved.role()
+            );
+        }
+
+        AppLogger.info("APPLICATION STARTED");//Load login screen
+
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("primary.fxml"));
-        Parent root = loader.load();
+        Parent root;
+
+        if (saved != null) {//put restored session into in memory Session
+            Session.login(saved.username(), saved.role());
+            AppLogger.info("SESSION RESTORED user=" + saved.username() + " role=" + saved.role());
+
+            loader.setLocation(getClass().getResource("secondary.fxml"));//go straight to secondary screen
+            root = loader.load();
+            SecondaryController controller = loader.getController();
+            controller.initialise(saved.username());
+
+            stage.setTitle("Show Users");
+        } else {//no session -> normal login screen
+            loader.setLocation(getClass().getResource("primary.fxml"));
+            root = loader.load();
+            stage.setTitle("Primary View");
+        }
+
         Scene scene = new Scene(root, 640, 480);
         stage.setScene(scene);
-        stage.setTitle("Primary View");
         stage.show();
     }
 

@@ -21,6 +21,7 @@ public final class Session {
     public static void login(String user, String userRole) {
         username = user;
         role = userRole;
+        LocalSQLiteDB.saveSession(username, role);
     }
 
     public static String getUsername() {
@@ -42,5 +43,6 @@ public final class Session {
     public static void logout() {
         username = null;
         role = null;
+        LocalSQLiteDB.clearSession();
     }
 }
