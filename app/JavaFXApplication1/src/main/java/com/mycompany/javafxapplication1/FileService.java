@@ -29,6 +29,25 @@ public class FileService {
     private static long msSince(long startNano) {
         return (System.nanoTime() - startNano) / 1_000_000;
     }
+    
+    private static void maybeDelay(String op, String username, String filename) {
+        if (!Configuration.SIMULATE_DELAY) return;
+
+        int min = Configuration.DELAY_MIN_MS;
+        int max = Configuration.DELAY_MAX_MS;
+        if (max < min) { int t = min; min = max; max = t; }
+
+        int delay = min + (int)(Math.random() * (max - min + 1));
+
+        long t0 = System.nanoTime();
+        try {
+            Thread.sleep(delay);
+            AppLogger.metric("ARTIFICIAL_DELAY op=" + op + " user=" + username + " file=" + filename, msSince(t0));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            AppLogger.warn("ARTIFICIAL_DELAY interrupted op=" + op + " user=" + username + " file=" + filename);
+        }
+    }
 
     public static Path userDir(String username) throws IOException {
         Path dir = BASE_DIR.resolve(username);
@@ -47,6 +66,7 @@ public class FileService {
         
         long t = Metrics.start();
         long t0 = System.nanoTime();
+        maybeDelay("WRITE", username, filename);
         synchronized (lockForUser(username)) {
             validateFilename(filename);
             Path userDir = userDir(username);
@@ -60,6 +80,7 @@ public class FileService {
     public static void deleteFile(String username, String filename) throws IOException {
         long t = Metrics.start();
         long t0 = System.nanoTime();
+        maybeDelay("DELETE", username, filename);
         synchronized (lockForUser(username)) {
             validateFilename(filename);
             Path file = userDir(username).resolve(filename);
@@ -75,6 +96,7 @@ public class FileService {
         long t = Metrics.start();
         long t0 = System.nanoTime();
         String out;
+        maybeDelay("READ", username, filename);
         synchronized (lockForUser(username)) {
             validateFilename(filename);
             Path file = userDir(username).resolve(filename);
@@ -106,7 +128,8 @@ public class FileService {
         long t = Metrics.start();
         long t0 = System.nanoTime();
         java.util.List<String> files;
-
+        
+        maybeDelay("LIST", username, "*");
         synchronized (lockForUser(username)) {
             java.nio.file.Path userDir = Configuration.STORAGE_LOCAL_DIR.resolve(username);
 
