@@ -41,7 +41,7 @@ public class FileService {
 
         long t0 = System.nanoTime();
         try {
-            Thread.sleep(delay);
+            Thread.sleep(800);
             AppLogger.metric("ARTIFICIAL_DELAY op=" + op + " user=" + username + " file=" + filename, msSince(t0));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

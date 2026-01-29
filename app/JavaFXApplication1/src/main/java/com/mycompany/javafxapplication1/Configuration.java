@@ -24,7 +24,7 @@ public final class Configuration {
         Boolean.parseBoolean(System.getenv().getOrDefault("SIM_DELAY", "false")); //artificial delay affects
     
     public static final int DELAY_MIN_MS =
-        Integer.parseInt(System.getenv().getOrDefault("DELAY_MIN_MS", "3000")); //3 to
+        Integer.parseInt(System.getenv().getOrDefault("DELAY_MIN_MS", "30000")); //3 to
     public static final int DELAY_MAX_MS =
-        Integer.parseInt(System.getenv().getOrDefault("DELAY_MAX_MS", "9000"));//9 second delay
+        Integer.parseInt(System.getenv().getOrDefault("DELAY_MAX_MS", "90000"));//9 second delay
 }

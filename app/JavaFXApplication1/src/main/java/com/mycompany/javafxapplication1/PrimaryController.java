@@ -16,8 +16,16 @@ import javafx.stage.Stage;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PrimaryController {
+    
+    private static final int MAX_ATTEMPTS = 5;//log in attempts
+    private static final long BLOCK_WINDOW_MS = 60_000; // 1 minute
+
+    private static final Map<String, Integer> attempts = new HashMap<>();
+    private static final Map<String, Long> blockedUntil = new HashMap<>();
 
     @FXML
     private Button registerBtn;
@@ -65,6 +73,12 @@ public class PrimaryController {
 
     @FXML
     private void switchToSecondary() {
+        String username = userTextField.getText().trim();
+        Long blocked = blockedUntil.get(username);
+        if (blocked != null && System.currentTimeMillis() < blocked) {
+            AppLogger.warn("LOGIN BLOCKED user=" + username);
+            return;
+        }
         Stage secondaryStage = new Stage();
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
 
@@ -80,7 +94,8 @@ public class PrimaryController {
             if (role != null) {
 
                 Session.login(user, role);
-
+                attempts.remove(user);//resets reate limit when logged in success
+                blockedUntil.remove(user);
                 AppLogger.info("LOGIN success user=" + Session.getUsername() + " role=" + Session.getRole());
 
                 FXMLLoader loader = new FXMLLoader();
@@ -99,6 +114,13 @@ public class PrimaryController {
 
             } else {
                 AppLogger.warn("LOGIN failed user=" + user);
+                //rate limitting logic
+                attempts.put(user, attempts.getOrDefault(user, 0) + 1);
+                if (attempts.get(user) >= MAX_ATTEMPTS) {
+                    blockedUntil.put(user, System.currentTimeMillis() + BLOCK_WINDOW_MS);
+                    attempts.remove(user);
+                    AppLogger.warn("LOGIN RATE-LIMIT user=" + user);
+                }
                 dialogue("Invalid User Name / Password", "Please try again!");
             }
 
