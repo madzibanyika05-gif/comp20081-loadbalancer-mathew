@@ -82,10 +82,16 @@ public class SecondaryController {
     private void deleteCustomFile() {
         try {
             String username = Session.getUsername();
+            FileRef ref = getSelectedFileRef();
 
             String file = fileNameField.getText().trim();
             if (file.isEmpty()) {
                 file = filesListView.getSelectionModel().getSelectedItem();
+            }
+            if (ref != null && !ref.owner.equalsIgnoreCase(username)) {//deleting shared files
+                AppLogger.warn("ACL DELETE denied user=" + username + " owner=" + ref.owner + " file=" + ref.filename);
+                customTextField.setText("ACCESS DENIED (DELETE)");
+                return;
             }
             if (file == null || file.trim().isEmpty()) return;
 
@@ -104,13 +110,23 @@ public class SecondaryController {
         try {
             String username = Session.getUsername();
             String file = fileNameField.getText().trim();
+            FileRef ref = getSelectedFileRef();
 
             if (file.isEmpty()) {
                 file = "custom.txt";
                 fileNameField.setText(file);
             }
-
-            FileService.writeTextFile(username, file, customTextField.getText());
+            //if seclected item is share write permission is ran
+            if (ref != null && !ref.owner.equalsIgnoreCase(username)) {
+                MySQLDB db = new MySQLDB();
+                if (!db.hasPermission(ref.owner, ref.filename, username, "WRITE")) {
+                    AppLogger.warn("ACL WRITE denied user=" + username + " owner=" + ref.owner + " file=" + ref.filename);
+                    customTextField.setText("ACCESS DENIED (WRITE)");
+                    return;
+                }
+            }
+            String targetOwner = (ref != null) ? ref.owner : username;
+            FileService.writeTextFile(targetOwner, file, customTextField.getText());
             refreshFileList();
         } catch (IOException e) {
             e.printStackTrace();
@@ -151,7 +167,15 @@ public class SecondaryController {
             String username = Session.getUsername();
             String file = filesListView.getSelectionModel().getSelectedItem();
             if (file == null) return;
-
+            if (!ref.owner.equalsIgnoreCase(username)) {
+                //permission to check if its the owner or not
+                MySQLDB db = new MySQLDB();
+                if (!db.hasPermission(ref.owner, ref.filename, username, "READ")) {
+                    AppLogger.warn("ACL READ denied user=" + username + " owner=" + ref.owner + " file=" + ref.filename);
+                    customTextField.setText("ACCESS DENIED (READ)");
+                    return;
+                }
+            }
             String content = FileService.readTextFile(username, file);
             fileNameField.setText(file);
             customTextField.setText(content);
