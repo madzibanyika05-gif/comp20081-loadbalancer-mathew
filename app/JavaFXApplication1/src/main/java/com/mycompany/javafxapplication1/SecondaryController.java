@@ -115,10 +115,13 @@ public class SecondaryController {
             FileRef selectedRef = getSelectedFileRef();
 
             FileRef ref;
-            if (!typed.isEmpty()) {
-                ref = new FileRef(username, typed, null);//typed filename means save to your own storage
-            } else if (selectedRef != null) {
-                ref = selectedRef;
+            if (selectedRef != null) {//if a file is selected in the list, save back to THAT file (including shared files)
+                String nameToSave = typed.isEmpty() ? selectedRef.filename : typed;
+                ref = new FileRef(selectedRef.owner, nameToSave, selectedRef.perm);
+            }
+            //or save to your own storage using whatever they typed (or default)
+            else if (!typed.isEmpty()) {
+                ref = new FileRef(username, typed, null);
             } else {
                 ref = new FileRef(username, "custom.txt", null);
                 fileNameField.setText("custom.txt");
