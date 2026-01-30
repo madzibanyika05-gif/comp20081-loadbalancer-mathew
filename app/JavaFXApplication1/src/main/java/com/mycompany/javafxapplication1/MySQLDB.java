@@ -77,6 +77,19 @@ public class MySQLDB {
                 Statement stmt = conn.createStatement()) {
 
                 stmt.execute(sql);
+                
+                String aclSql =
+                    "CREATE TABLE IF NOT EXISTS file_permissions (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "owner VARCHAR(50) NOT NULL, " +
+                    "filename VARCHAR(255) NOT NULL, " +
+                    "grantee VARCHAR(50) NOT NULL, " +
+                    "perm VARCHAR(10) NOT NULL, " + //read and write
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "UNIQUE KEY uniq_perm (owner, filename, grantee)" +
+                    ")";
+
+                stmt.execute(aclSql);
 
             } catch (SQLException e) {
                 e.printStackTrace();
