@@ -110,15 +110,21 @@ public class SecondaryController {
     private void saveCustomData(ActionEvent event) {
         try {
             String username = Session.getUsername();
-            String file = fileNameField.getText().trim();
-            FileRef ref = getSelectedFileRef();
+            //select or type which file to save to
+            String typed = fileNameField.getText().trim();
+            FileRef selectedRef = getSelectedFileRef();
 
-            if (file.isEmpty()) {
-                file = "custom.txt";
-                fileNameField.setText(file);
+            FileRef ref;
+            if (!typed.isEmpty()) {
+                ref = new FileRef(username, typed, null);//typed filename means save to your own storage
+            } else if (selectedRef != null) {
+                ref = selectedRef;
+            } else {
+                ref = new FileRef(username, "custom.txt", null);
+                fileNameField.setText("custom.txt");
             }
-            //if seclected item is share write permission is ran
-            if (ref != null && !ref.owner.equalsIgnoreCase(username)) {
+            
+            if (!ref.owner.equalsIgnoreCase(username)) {//enforce write permission when saving someone elses file
                 MySQLDB db = new MySQLDB();
                 if (!db.hasPermission(ref.owner, ref.filename, username, "WRITE")) {
                     AppLogger.warn("ACL WRITE denied user=" + username + " owner=" + ref.owner + " file=" + ref.filename);
@@ -126,8 +132,9 @@ public class SecondaryController {
                     return;
                 }
             }
-            String targetOwner = (ref != null) ? ref.owner : username;
-            FileService.writeTextFile(targetOwner, file, customTextField.getText());
+
+            FileService.writeTextFile(ref.owner, ref.filename, customTextField.getText());
+            AppLogger.info("FILE SAVED editor=" + username + " owner=" + ref.owner + " file=" + ref.filename);
             refreshFileList();
         } catch (IOException e) {
             e.printStackTrace();
@@ -168,10 +175,8 @@ public class SecondaryController {
             String username = Session.getUsername();
             FileRef ref = getSelectedFileRef();
             if (ref == null) return;
-            String file = filesListView.getSelectionModel().getSelectedItem();
-            if (file == null) return;
+            //enforces read permision if file isnt theirs
             if (!ref.owner.equalsIgnoreCase(username)) {
-                //permission to check if its the owner or not
                 MySQLDB db = new MySQLDB();
                 if (!db.hasPermission(ref.owner, ref.filename, username, "READ")) {
                     AppLogger.warn("ACL READ denied user=" + username + " owner=" + ref.owner + " file=" + ref.filename);
@@ -179,9 +184,11 @@ public class SecondaryController {
                     return;
                 }
             }
-            String content = FileService.readTextFile(username, file);
-            fileNameField.setText(file);
+            String content = FileService.readTextFile(ref.owner, ref.filename);
+            fileNameField.setText(ref.filename);
             customTextField.setText(content);
+
+            AppLogger.info("FILE LOADED viewer=" + username + " owner=" + ref.owner + " file=" + ref.filename);
         } catch (IOException e) {
             e.printStackTrace();
             customTextField.setText("ERROR: couldn't load file");
@@ -241,6 +248,68 @@ public class SecondaryController {
             dataTableView.setItems(data);
         } else {
             AppLogger.warn("DELETE USER failed for: " + target);
+        }
+    }
+    
+    @FXML
+    private void shareSelectedFile() {
+        try {
+            String owner = Session.getUsername();
+            FileRef ref = getSelectedFileRef();
+            if (ref == null) {
+                AppLogger.warn("SHARE clicked but no file selected owner=" + owner);
+                return;
+            }
+            if (!ref.owner.equalsIgnoreCase(owner)) {//only owner can share
+                AppLogger.warn("SHARE denied (not owner) user=" + owner + " owner=" + ref.owner + " file=" + ref.filename);
+                customTextField.setText("ACCESS DENIED (SHARE)");
+                return;
+            }
+            
+            String grantee = shareUserField.getText().trim();
+            if (grantee.isBlank()) return;
+            String perm = permChoice.getValue(); //read or write
+            if (perm == null) perm = "READ";
+            MySQLDB db = new MySQLDB();
+            boolean ok = db.grantFilePermission(owner, ref.filename, grantee, perm);
+
+            if (ok) {
+                AppLogger.info("ACL GRANTED owner=" + owner + " file=" + ref.filename + " grantee=" + grantee + " perm=" + perm);
+            } else {
+                AppLogger.warn("ACL GRANT FAILED owner=" + owner + " file=" + ref.filename + " grantee=" + grantee);
+            }
+
+        } catch (Exception e) {
+            AppLogger.error("SHARE ERROR", e);
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void revokeSelectedFile() {
+        try {
+            String owner = Session.getUsername();
+            FileRef ref = getSelectedFileRef();
+            if (ref == null) return;
+            if (!ref.owner.equalsIgnoreCase(owner)) {//only owner can revoke
+                AppLogger.warn("REVOKE denied (not owner) user=" + owner + " owner=" + ref.owner + " file=" + ref.filename);
+                customTextField.setText("ACCESS DENIED (REVOKE)");
+                return;
+            }
+            String grantee = shareUserField.getText().trim();
+            if (grantee.isBlank()) return;
+            MySQLDB db = new MySQLDB();
+            boolean ok = db.revokeFilePermission(owner, ref.filename, grantee);
+
+            if (ok) {
+                AppLogger.info("ACL REVOKED owner=" + owner + " file=" + ref.filename + " grantee=" + grantee);
+            } else {
+                AppLogger.warn("ACL REVOKE FAILED owner=" + owner + " file=" + ref.filename + " grantee=" + grantee);
+            }
+
+        } catch (Exception e) {
+            AppLogger.error("REVOKE ERROR", e);
+            e.printStackTrace();
         }
     }
     
