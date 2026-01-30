@@ -95,7 +95,8 @@ public class SecondaryController {
             }
             if (file == null || file.trim().isEmpty()) return;
 
-            FileService.deleteFile(username, file);
+            String targetOwner = (ref != null) ? ref.owner : username;
+            FileService.deleteFile(targetOwner, file);
             customTextField.setText("");
             fileNameField.setText("");
             refreshFileList();
@@ -165,6 +166,8 @@ public class SecondaryController {
     private void loadSelectedFile() {
         try {
             String username = Session.getUsername();
+            FileRef ref = getSelectedFileRef();
+            if (ref == null) return;
             String file = filesListView.getSelectionModel().getSelectedItem();
             if (file == null) return;
             if (!ref.owner.equalsIgnoreCase(username)) {

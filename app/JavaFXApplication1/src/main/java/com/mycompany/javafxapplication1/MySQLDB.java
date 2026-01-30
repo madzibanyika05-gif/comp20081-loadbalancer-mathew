@@ -204,11 +204,10 @@ public class MySQLDB {
     }
 
     public boolean grantFilePermission(String owner, String filename, String grantee, String perm) {
-        String sql = """
-            INSERT INTO file_permissions(owner, filename, grantee, perm)
-            VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE perm = VALUES(perm)
-        """;
+        String sql =
+            "INSERT INTO file_permissions(owner, filename, grantee, perm) " +
+            "VALUES (?, ?, ?, ?) " +
+            "ON DUPLICATE KEY UPDATE perm = VALUES(perm)";
 
         try (Connection conn = getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
