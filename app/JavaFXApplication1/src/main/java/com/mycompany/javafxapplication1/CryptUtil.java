@@ -17,7 +17,7 @@ import javax.crypto.spec.SecretKeySpec;
  *
  * @author ntu-user
  */
-public final class CryptoUtil {
+public final class CryptUtil {
     //256bit AES key stored locally so it persists across runs
     private static final Path KEY_FILE = Configuration.STORAGE_LOCAL_DIR.resolve(".aes_key_b64");
 
@@ -28,12 +28,12 @@ public final class CryptoUtil {
 
     private static volatile SecretKey cachedKey;
 
-    private CryptoUtil() {}
+    private CryptUtil() {}
 
     private static SecretKey getOrCreateKey() throws IOException {
         if (cachedKey != null) return cachedKey;
 
-        synchronized (CryptoUtil.class) {
+        synchronized (CryptUtil.class) {
             if (cachedKey != null) return cachedKey;
 
             if (Files.exists(KEY_FILE)) {
