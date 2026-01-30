@@ -185,4 +185,122 @@ public class MySQLDB {
             return false;
         }
     }
+    
+    //file to handle permision
+    public static class SharedFile {
+        private final String owner;
+        private final String filename;
+        private final String perm;
+
+        public SharedFile(String owner, String filename, String perm) {
+            this.owner = owner;
+            this.filename = filename;
+            this.perm = perm;
+        }
+
+        public String getOwner() { return owner; }
+        public String getFilename() { return filename; }
+        public String getPerm() { return perm; }
+    }
+
+    public boolean grantFilePermission(String owner, String filename, String grantee, String perm) {
+        String sql = """
+            INSERT INTO file_permissions(owner, filename, grantee, perm)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE perm = VALUES(perm)
+        """;
+
+        try (Connection conn = getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, owner);
+            stmt.setString(2, filename);
+            stmt.setString(3, grantee);
+            stmt.setString(4, perm.toUpperCase());
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean revokeFilePermission(String owner, String filename, String grantee) {
+        String sql = "DELETE FROM file_permissions WHERE owner=? AND filename=? AND grantee=?";
+
+        try (Connection conn = getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, owner);
+            stmt.setString(2, filename);
+            stmt.setString(3, grantee);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public ObservableList<SharedFile> getSharedFilesFor(String grantee) {
+        ObservableList<SharedFile> out = FXCollections.observableArrayList();
+
+        String sql = "SELECT owner, filename, perm FROM file_permissions WHERE grantee=? ORDER BY owner, filename";
+        try (Connection conn = getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, grantee);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    out.add(new SharedFile(
+                        rs.getString("owner"),
+                        rs.getString("filename"),
+                        rs.getString("perm")
+                    ));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return out;
+    }
+
+    public String getPermission(String owner, String filename, String grantee) {
+        String sql = "SELECT perm FROM file_permissions WHERE owner=? AND filename=? AND grantee=? LIMIT 1";
+
+        try (Connection conn = getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, owner);
+            stmt.setString(2, filename);
+            stmt.setString(3, grantee);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getString("perm");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // permission to read or write
+    public boolean hasPermission(String owner, String filename, String grantee, String neededPerm) {
+        if (owner.equalsIgnoreCase(grantee)) return true; //owner always alloud 
+
+        String perm = getPermission(owner, filename, grantee);
+        if (perm == null) return false;
+
+        perm = perm.toUpperCase();
+        neededPerm = neededPerm.toUpperCase();
+
+        if (neededPerm.equals("READ")) {
+            return perm.equals("READ") || perm.equals("WRITE");
+        }
+        return perm.equals("WRITE");
+    }
 }
