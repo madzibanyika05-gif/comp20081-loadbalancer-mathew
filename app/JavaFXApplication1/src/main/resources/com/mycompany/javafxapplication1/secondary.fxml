@@ -55,13 +55,15 @@
         <Button text="Refresh" onAction="#RefreshBtnHandler"/>
         <Button text="Delete File" onAction="#deleteCustomFile"/>
         <Button text="Save" onAction="#saveCustomData"/>
-        <TextField fx:id="shareUserField" promptText="share with username" prefWidth="160"/>
-        <ChoiceBox fx:id="permChoice" prefWidth="90"/>
-        <Button text="Share" onAction="#shareSelectedFile"/>
-        <Button text="Unshare" onAction="#unshareSelectedFile"/>
         <Pane HBox.hgrow="ALWAYS"/>
+
+        <TextField fx:id="shareUserField" promptText="Share with user..." />
+        <ChoiceBox fx:id="permChoice" />
+        <Button text="Share" onAction="#shareSelectedFile" />
+        <Button text="Revoke" onAction="#revokeSelectedFile" />
+
         <Button text="Return to Login" onAction="#switchToPrimary"/>
-        <Button fx:id="deleteUserBtn" text="Delete Selected User" onAction="#deleteSelectedUser"/>
+    <Button fx:id="deleteUserBtn" text="Delete Selected User" onAction="#deleteSelectedUser"/>
     </HBox>
     </children>
     <padding>
