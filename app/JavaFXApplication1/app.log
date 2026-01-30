@@ -144,3 +144,227 @@
 2026-01-29T17:55:56.431965962 [INFO] LOGIN ATTEMPT user=Ally
 2026-01-29T17:55:57.670630671 [INFO] LOGIN ATTEMPT user=Ally
 2026-01-29T17:55:59.170554255 [INFO] LOGIN ATTEMPT user=Ally
+2026-01-30T01:32:20.538401968 [INFO] APPLICATION STARTED
+2026-01-30T01:32:27.634971680 [INFO] LOGIN ATTEMPT user=Mathew
+2026-01-30T01:32:27.708196930 [INFO] LOGIN success user=Mathew role=ADMIN
+2026-01-30T01:32:27.745709388 [METRIC] FILE_READ user=Mathew file=welcome.txt took 0ms
+2026-01-30T01:32:27.746920888 [METRIC] FILE_LIST user=Mathew took 0ms
+2026-01-30T01:35:37.791265045 [METRIC] FILE_WRITE user=Mathew file=custom.txt took 5ms
+2026-01-30T01:35:37.792681712 [INFO] FILE SAVED editor=Mathew owner=Mathew file=custom.txt
+2026-01-30T01:35:37.793982503 [METRIC] FILE_LIST user=Mathew took 1ms
+2026-01-30T01:36:49.533721217 [INFO] ACL GRANTED owner=Mathew file=custom.txt grantee=Sam perm=READ
+2026-01-30T01:36:52.533988385 [INFO] ACL GRANTED owner=Mathew file=custom.txt grantee=Sam perm=READ
+2026-01-30T01:37:13.677488923 [INFO] LOGOUT user=Mathew
+2026-01-30T01:37:17.858306592 [INFO] LOGIN ATTEMPT user=Sam
+2026-01-30T01:37:21.730347635 [INFO] LOGIN ATTEMPT user=Sam
+2026-01-30T01:37:21.756864135 [INFO] LOGIN success user=Sam role=USER
+2026-01-30T01:37:21.775423885 [METRIC] FILE_READ user=Sam file=welcome.txt took 0ms
+2026-01-30T01:37:21.775772302 [METRIC] FILE_LIST user=Sam took 0ms
+2026-01-30T01:37:36.139987003 [METRIC] FILE_READ user=Mathew file=custom.txt took 1ms
+2026-01-30T01:37:36.143069169 [INFO] FILE LOADED viewer=Sam owner=Mathew file=custom.txt
+2026-01-30T01:37:40.563500713 [METRIC] FILE_WRITE user=Sam file=custom.txt took 1ms
+2026-01-30T01:37:40.563980463 [INFO] FILE SAVED editor=Sam owner=Sam file=custom.txt
+2026-01-30T01:37:40.568382755 [METRIC] FILE_LIST user=Sam took 4ms
+2026-01-30T01:38:01.280700667 [METRIC] FILE_WRITE user=Sam file=custom.txt took 3ms
+2026-01-30T01:38:01.289768709 [INFO] FILE SAVED editor=Sam owner=Sam file=custom.txt
+2026-01-30T01:38:01.291129542 [METRIC] FILE_LIST user=Sam took 1ms
+2026-01-30T01:38:24.162406970 [METRIC] FILE_WRITE user=Sam file=custom.txt took 2ms
+2026-01-30T01:38:24.163083178 [INFO] FILE SAVED editor=Sam owner=Sam file=custom.txt
+2026-01-30T01:38:24.163997011 [METRIC] FILE_LIST user=Sam took 0ms
+2026-01-30T01:38:30.979257958 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:38:30.980518917 [INFO] FILE LOADED viewer=Sam owner=Mathew file=custom.txt
+2026-01-30T01:38:50.191435051 [INFO] LOGOUT user=Sam
+2026-01-30T01:38:54.123752303 [INFO] LOGIN ATTEMPT user=Mathew
+2026-01-30T01:38:54.165425303 [INFO] LOGIN success user=Mathew role=ADMIN
+2026-01-30T01:38:54.181035095 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:38:54.181425095 [METRIC] FILE_LIST user=Mathew took 0ms
+2026-01-30T01:39:18.585683050 [METRIC] FILE_READ user=Mathew file=custom.txt took 9ms
+2026-01-30T01:39:18.588181592 [INFO] FILE LOADED viewer=Mathew owner=Mathew file=custom.txt
+2026-01-30T01:39:25.700221429 [INFO] ACL REVOKED owner=Mathew file=custom.txt grantee=Sam
+2026-01-30T01:39:30.609151417 [INFO] LOGOUT user=Mathew
+2026-01-30T01:39:38.958211629 [INFO] LOGIN ATTEMPT user=Sam
+2026-01-30T01:39:42.139855797 [INFO] LOGIN ATTEMPT user=Sam
+2026-01-30T01:39:42.164763922 [INFO] LOGIN success user=Sam role=USER
+2026-01-30T01:39:42.181580130 [METRIC] FILE_READ user=Sam file=custom.txt took 0ms
+2026-01-30T01:39:42.182058714 [METRIC] FILE_LIST user=Sam took 0ms
+2026-01-30T01:40:04.410975418 [METRIC] FILE_READ user=Sam file=custom.txt took 2ms
+2026-01-30T01:40:04.413199252 [INFO] FILE LOADED viewer=Sam owner=Sam file=custom.txt
+2026-01-30T01:40:07.693693003 [METRIC] FILE_READ user=Sam file=welcome.txt took 1ms
+2026-01-30T01:40:07.695596795 [INFO] FILE LOADED viewer=Sam owner=Sam file=welcome.txt
+2026-01-30T01:40:11.542400713 [METRIC] FILE_READ user=Sam file=custom.txt took 0ms
+2026-01-30T01:40:11.543564005 [INFO] FILE LOADED viewer=Sam owner=Sam file=custom.txt
+2026-01-30T01:40:29.239876055 [INFO] LOGOUT user=Sam
+2026-01-30T01:40:35.741407377 [INFO] LOGIN ATTEMPT user=Mathew
+2026-01-30T01:40:35.817043294 [INFO] LOGIN success user=Mathew role=ADMIN
+2026-01-30T01:40:35.844845544 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:40:35.845432336 [METRIC] FILE_LIST user=Mathew took 0ms
+2026-01-30T01:41:03.199909751 [METRIC] FILE_DELETE user=Mathew file=custom.txt took 5ms
+2026-01-30T01:41:03.206164126 [METRIC] FILE_LIST user=Mathew took 2ms
+2026-01-30T01:41:22.354781510 [METRIC] FILE_WRITE user=Mathew file=custom.txt took 12ms
+2026-01-30T01:41:22.355489344 [INFO] FILE SAVED editor=Mathew owner=Mathew file=custom.txt
+2026-01-30T01:41:22.356494427 [METRIC] FILE_LIST user=Mathew took 0ms
+2026-01-30T01:41:42.695850589 [INFO] ACL GRANTED owner=Mathew file=custom.txt grantee=Ally perm=WRITE
+2026-01-30T01:41:52.246789219 [INFO] ACL GRANTED owner=Mathew file=custom.txt grantee=Ally perm=WRITE
+2026-01-30T01:41:56.898246012 [INFO] LOGOUT user=Mathew
+2026-01-30T01:42:03.961545960 [INFO] LOGIN ATTEMPT user=Ally
+2026-01-30T01:42:04.023836627 [INFO] LOGIN success user=Ally role=USER
+2026-01-30T01:42:04.045210002 [METRIC] FILE_READ user=Ally file=welcome.txt took 0ms
+2026-01-30T01:42:04.045683460 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:42:12.027970005 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:42:12.028904547 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:42:48.875769050 [METRIC] FILE_WRITE user=Ally file=custom.txt took 2ms
+2026-01-30T01:42:48.876409259 [INFO] FILE SAVED editor=Ally owner=Ally file=custom.txt
+2026-01-30T01:42:48.879117967 [METRIC] FILE_LIST user=Ally took 2ms
+2026-01-30T01:42:56.391511512 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:42:56.392833679 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:43:16.981220633 [METRIC] FILE_WRITE user=Ally file=custom.txt took 21ms
+2026-01-30T01:43:16.982496424 [INFO] FILE SAVED editor=Ally owner=Ally file=custom.txt
+2026-01-30T01:43:16.983979799 [METRIC] FILE_LIST user=Ally took 1ms
+2026-01-30T01:43:21.723253968 [METRIC] FILE_READ user=Ally file=custom.txt took 0ms
+2026-01-30T01:43:21.724259843 [INFO] FILE LOADED viewer=Ally owner=Ally file=custom.txt
+2026-01-30T01:43:24.914547720 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:43:24.915161012 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:43:34.745395794 [METRIC] FILE_WRITE user=Ally file=custom.txt took 4ms
+2026-01-30T01:43:34.749269085 [INFO] FILE SAVED editor=Ally owner=Ally file=custom.txt
+2026-01-30T01:43:34.753183377 [METRIC] FILE_LIST user=Ally took 3ms
+2026-01-30T01:43:39.050755921 [METRIC] FILE_READ user=Mathew file=custom.txt took 3ms
+2026-01-30T01:43:39.052147254 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:45:21.052831676 [INFO] SESSION RESTORED user=Ally role=USER
+2026-01-30T01:45:21.053862593 [INFO] APPLICATION STARTED
+2026-01-30T01:45:21.057946718 [INFO] SESSION RESTORED user=Ally role=USER
+2026-01-30T01:45:21.263906135 [METRIC] FILE_READ user=Ally file=custom.txt took 0ms
+2026-01-30T01:45:21.266035843 [METRIC] FILE_LIST user=Ally took 1ms
+2026-01-30T01:45:37.492797003 [METRIC] FILE_DELETE user=Ally file=custom.txt took 2ms
+2026-01-30T01:45:37.498932087 [METRIC] FILE_LIST user=Ally took 1ms
+2026-01-30T01:45:40.895171755 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:45:40.895583546 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:46:42.027852255 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 3ms
+2026-01-30T01:46:42.028973839 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:46:42.043078797 [METRIC] FILE_LIST user=Ally took 13ms
+2026-01-30T01:46:47.996000341 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:46:47.996696050 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:46:56.291991970 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:46:56.292921595 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:47:00.397515750 [METRIC] FILE_READ user=Ally file=welcome.txt took 6ms
+2026-01-30T01:47:00.401455291 [INFO] FILE LOADED viewer=Ally owner=Ally file=welcome.txt
+2026-01-30T01:47:03.387200585 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:47:03.388781585 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:47:18.740049634 [INFO] LOGOUT user=Ally
+2026-01-30T01:47:23.723252094 [INFO] LOGIN ATTEMPT user=Mathew
+2026-01-30T01:47:23.772602344 [INFO] LOGIN success user=Mathew role=ADMIN
+2026-01-30T01:47:23.790968678 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:47:23.791439803 [METRIC] FILE_LIST user=Mathew took 0ms
+2026-01-30T01:47:32.157499876 [INFO] LOGOUT user=Mathew
+2026-01-30T01:47:37.880903753 [INFO] LOGIN ATTEMPT user=Ally
+2026-01-30T01:47:37.918623337 [INFO] LOGIN success user=Ally role=USER
+2026-01-30T01:47:37.934072295 [METRIC] FILE_READ user=Ally file=welcome.txt took 0ms
+2026-01-30T01:47:37.934513295 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:47:42.104168255 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:47:42.105197797 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:48:18.245732300 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt(WRITE) took 4ms
+2026-01-30T01:48:18.246996383 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt(WRITE)
+2026-01-30T01:48:18.252173550 [METRIC] FILE_LIST user=Ally took 4ms
+2026-01-30T01:48:30.900095042 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:48:30.901304208 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:48:33.022222834 [METRIC] FILE_READ user=Ally file=Mathew::custom.txt(WRITE) took 0ms
+2026-01-30T01:48:33.022760084 [INFO] FILE LOADED viewer=Ally owner=Ally file=Mathew::custom.txt(WRITE)
+2026-01-30T01:48:49.198747884 [METRIC] FILE_DELETE user=Ally file=Mathew::custom.txt(WRITE) took 4ms
+2026-01-30T01:48:49.211802425 [METRIC] FILE_LIST user=Ally took 4ms
+2026-01-30T01:49:17.892715800 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 3ms
+2026-01-30T01:49:17.893330550 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:49:17.896485383 [METRIC] FILE_LIST user=Ally took 3ms
+2026-01-30T01:49:25.969985762 [METRIC] FILE_READ user=Ally file=welcome.txt took 1ms
+2026-01-30T01:49:25.979310887 [METRIC] FILE_LIST user=Ally took 6ms
+2026-01-30T01:49:29.942263291 [METRIC] FILE_READ user=Mathew file=custom.txt took 1ms
+2026-01-30T01:49:29.944619750 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt
+2026-01-30T01:50:03.157927793 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 2ms
+2026-01-30T01:50:03.158703501 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:03.159973209 [METRIC] FILE_LIST user=Ally took 1ms
+2026-01-30T01:50:03.321845543 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:03.321963459 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:03.322190918 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:03.471753668 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:03.471929793 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:03.472181710 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:03.771729585 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:03.771865751 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:03.772102460 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:03.921518418 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:03.921646460 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:03.921926668 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:04.058470251 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:04.058618793 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:04.058843710 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:04.204972835 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 1ms
+2026-01-30T01:50:04.205111252 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:04.205343002 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:04.355033835 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:04.355171918 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:04.355390252 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:04.498218668 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:04.498385627 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:04.498684585 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:04.654480835 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:04.654607418 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:04.654928627 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:04.804667460 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:04.804809210 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:04.805023210 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:04.947604544 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:04.947782544 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:04.948021252 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:05.076729085 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:05.076859210 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:05.077055835 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:05.237900585 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:05.238030460 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:05.238226294 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:05.371776377 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:05.371908919 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:05.372138835 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:05.521791961 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:05.521975627 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:05.522204419 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:05.671882252 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:05.672096877 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:05.672395544 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:05.839327002 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:05.839501502 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:05.839815002 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:05.988968627 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:05.989095252 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:05.989307377 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:06.156654544 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:06.156767919 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:06.156916002 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:06.338680128 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:06.338789211 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:06.338956544 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:06.488954711 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:06.489104294 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:06.489330169 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:06.655613961 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:06.655768503 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:06.656016794 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:06.821890961 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:06.821985419 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:06.822153294 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:06.988750378 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:06.988858503 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:06.989038795 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:07.138648461 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:07.138747503 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:07.138914628 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:07.304520336 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:07.304608128 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:07.304783670 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:07.471965086 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:07.472068628 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:07.472253961 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:07.621452295 [METRIC] FILE_WRITE user=Ally file=Mathew::custom.txt (WRITE) took 0ms
+2026-01-30T01:50:07.621538878 [INFO] FILE SAVED editor=Ally owner=Ally file=Mathew::custom.txt (WRITE)
+2026-01-30T01:50:07.621780628 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:33.006510918 [METRIC] FILE_READ user=Ally file=welcome.txt took 8ms
+2026-01-30T01:50:33.013834584 [METRIC] FILE_LIST user=Ally took 0ms
+2026-01-30T01:50:35.568613544 [METRIC] FILE_READ user=Mathew file=custom.txt took 0ms
+2026-01-30T01:50:35.569205044 [INFO] FILE LOADED viewer=Ally owner=Mathew file=custom.txt

@@ -352,6 +352,8 @@ public class SecondaryController {
             return;
         }
         applyRolePermissions();
+        permChoice.getItems().setAll("READ", "WRITE");
+        permChoice.setValue("READ");
         userTextField.setText(username);
         try {
             if (!FileService.fileExists(username, "welcome.txt")) {// only create welcome.txt if it doesn't already exist

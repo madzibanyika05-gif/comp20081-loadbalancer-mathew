@@ -2,6 +2,8 @@ com/mycompany/javafxapplication1/FileService.class
 com/mycompany/javafxapplication1/RegisterController.class
 com/mycompany/javafxapplication1/Configuration.class
 com/mycompany/javafxapplication1/Session.class
+com/mycompany/javafxapplication1/SecondaryController$FileRef.class
+com/mycompany/javafxapplication1/MySQLDB$SharedFile.class
 com/mycompany/javafxapplication1/LocalSQLiteDB$SessionData.class
 com/mycompany/javafxapplication1/Metrics.class
 com/mycompany/javafxapplication1/MySQLDB.class
