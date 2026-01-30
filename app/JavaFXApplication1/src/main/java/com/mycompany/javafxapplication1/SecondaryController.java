@@ -53,6 +53,12 @@ public class SecondaryController {
     private Button deleteUserBtn;
     
     @FXML
+    private TextField shareUserField;
+    
+    @FXML
+    private javafx.scene.control.ChoiceBox<String> permChoice;
+    
+    @FXML
     private void RefreshBtnHandler(ActionEvent event){
         try {
             String username = Session.getUsername();
@@ -116,13 +122,29 @@ public class SecondaryController {
     private void refreshFileList() {
         try {
             String username = Session.getUsername();
-            java.util.List<String> files = FileService.listUserFiles(username); // we’ll add this if missing
-            filesListView.getItems().setAll(files);
+            fileIndex.clear();
+            //for users own file
+            java.util.List<String> own = FileService.listUserFiles(username);
+            for (String f : own) {
+            String display = f;
+            fileIndex.put(display, new FileRef(username, f, null));
+            }
+            //shared files from mysql table
+            MySQLDB db = new MySQLDB();
+            ObservableList<MySQLDB.SharedFile> shared = db.getSharedFilesFor(username);
+            for (MySQLDB.SharedFile s : shared) {
+            String display = s.getOwner() + "::" + s.getFilename() + " (" + s.getPerm() + ")";
+            fileIndex.put(display, new FileRef(s.getOwner(), s.getFilename(), s.getPerm()));
+            }
+
+            filesListView.getItems().setAll(fileIndex.keySet());
+            filesListView.getItems().sort(String::compareToIgnoreCase);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+ 
     @FXML
     private void loadSelectedFile() {
         try {
@@ -205,6 +227,26 @@ public class SecondaryController {
     //user delte shows on admin
         deleteUserBtn.setVisible(admin);
         deleteUserBtn.setManaged(admin);
+    }
+    
+    private static class FileRef {
+        String owner;
+        String filename;
+        String perm; //null for own files and read and write shared files
+
+        FileRef(String owner, String filename, String perm) {
+            this.owner = owner;
+            this.filename = filename;
+            this.perm = perm;
+        }
+    }
+
+    private final java.util.Map<String, FileRef> fileIndex = new java.util.HashMap<>();
+
+    private FileRef getSelectedFileRef() {
+        String key = filesListView.getSelectionModel().getSelectedItem();
+        if (key == null) return null;
+        return fileIndex.get(key);
     }
     
     public void initialise(String username) {
