@@ -67,11 +67,19 @@ public class FileService {
         long t = Metrics.start();
         long t0 = System.nanoTime();
         maybeDelay("WRITE", username, filename);
+        validateFilename(filename);
         synchronized (lockForUser(username)) {
-            validateFilename(filename);
             Path userDir = userDir(username);
             Path file = userDir.resolve(filename);
-            Files.writeString(file, content);
+            byte[] plaintext = content.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            byte[] encrypted;
+            try {
+                encrypted = CryptUtil.encrypt(plaintext);
+            } catch (Exception ex) {
+                AppLogger.error("ENCRYPT failed user=" + username + " file=" + filename, ex);
+                throw new IOException("Encryption failed", ex);
+            }
+            Files.write(file, encrypted);
         }
         AppLogger.metric("FILE_WRITE user=" + username + " file=" + filename, msSince(t0));
         Metrics.end("file.write", t);
@@ -95,24 +103,48 @@ public class FileService {
         
         long t = Metrics.start();
         long t0 = System.nanoTime();
-        String out;
         maybeDelay("READ", username, filename);
+        validateFilename(filename);
+        String out;
         synchronized (lockForUser(username)) {
-            validateFilename(filename);
             Path file = userDir(username).resolve(filename);
-            out = Files.readString(file);
+            byte[] data = Files.readAllBytes(file);
+
+            try {
+                byte[] plaintext = CryptUtil.decrypt(data);
+                out = new String(plaintext, java.nio.charset.StandardCharsets.UTF_8);
+            } catch (Exception ex) {
+                // Backwards compatible: if file was created before encryption, treat as plaintext
+                AppLogger.warn("DECRYPT failed - treating as plaintext user=" + username + " file=" + filename);
+                out = new String(data, java.nio.charset.StandardCharsets.UTF_8);
+            }
         }
         AppLogger.metric("FILE_READ user=" + username + " file=" + filename, msSince(t0));
         Metrics.end("file.read", t);
         return out;
     }
     
-    public static void writeUserFile(String username, String filename, String content)
-        throws IOException {
+    public static void writeUserFile(String username, String filename, String content) throws IOException {
+        long t = Metrics.start();
+        long t0 = System.nanoTime();
+        maybeDelay("WRITE", username, filename);
+        validateFilename(filename);
+        synchronized (lockForUser(username)) {
+            Path userDir = userDir(username);
+            Path file = userDir.resolve(filename);
 
-    Path userDir = userDir(username); // make sures diactory exists
-    Path file = userDir.resolve(filename);
-    Files.writeString(file, content);
+            byte[] plaintext = content.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            byte[] encrypted;
+            try {
+                encrypted = CryptUtil.encrypt(plaintext);
+            } catch (Exception ex) {
+                AppLogger.error("ENCRYPT failed user=" + username + " file=" + filename, ex);
+                throw new IOException("Encryption failed", ex);
+            }
+            Files.write(file, encrypted);
+        }
+        AppLogger.metric("FILE_WRITE user=" + username + " file=" + filename, msSince(t0));
+        Metrics.end("file.write", t);
     }
     
     public static boolean fileExists(String username, String filename) {
