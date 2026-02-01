@@ -1,147 +1,170 @@
-import java.io.*;
-import java.net.*;
-import java.nio.file.*;
-import java.util.*;
-
-public class StorageServer {
-
-    private final Path baseDir;
-
-    public StorageServer(Path baseDir) {
-        this.baseDir = baseDir;
-    }
-
-    private static void sendLine(BufferedWriter out, String s) throws IOException {
-        out.write(s);
-        out.write("\n");
-        out.flush();
-    }
-
-    private static String safeName(String name) {
-        if (name == null) return null;
-        name = name.trim();
-        if (name.isEmpty()) return null;
-        if (name.contains("..") || name.contains("/") || name.contains("\\")) return null;
-        return name;
-    }
-
-    private void handle(Socket client) {
-        try (client;
-             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()))) {
-
-            String line = in.readLine();
-            if (line == null) return;
-
-            String[] parts = line.split(" ");
-            String cmd = parts[0].toUpperCase(Locale.ROOT);
-
-            if (cmd.equals("PING")) {
-                sendLine(out, "OK");
-                return;
-            }
-
-            if (cmd.equals("LIST")) {
-                if (parts.length < 2) { sendLine(out, "ERR bad_args"); return; }
-                String user = safeName(parts[1]);
-                if (user == null) { sendLine(out, "ERR bad_user"); return; }
-
-                Path userDir = baseDir.resolve(user);
-                Files.createDirectories(userDir);
-
-                List<String> names = new ArrayList<>();
-                try (var stream = Files.list(userDir)) {
-                    stream.filter(Files::isRegularFile)
-                          .map(p -> p.getFileName().toString())
-                          .sorted()
-                          .forEach(names::add);
-                }
-
-                sendLine(out, "OK " + names.size());
-                for (String n : names) sendLine(out, n);
-                return;
-            }
-
-            if (cmd.equals("READ")) {
-                if (parts.length < 3) { sendLine(out, "ERR bad_args"); return; }
-                String user = safeName(parts[1]);
-                String file = safeName(parts[2]);
-                if (user == null || file == null) { sendLine(out, "ERR bad_name"); return; }
-
-                Path p = baseDir.resolve(user).resolve(file);
-                if (!Files.exists(p)) { sendLine(out, "ERR not_found"); return; }
-
-                byte[] data = Files.readAllBytes(p);
-                sendLine(out, "OK " + data.length);
-                client.getOutputStream().write(data);
-                client.getOutputStream().flush();
-                return;
-            }
-
-            if (cmd.equals("DELETE")) {
-                if (parts.length < 3) { sendLine(out, "ERR bad_args"); return; }
-                String user = safeName(parts[1]);
-                String file = safeName(parts[2]);
-                if (user == null || file == null) { sendLine(out, "ERR bad_name"); return; }
-
-                Path p = baseDir.resolve(user).resolve(file);
-                Files.deleteIfExists(p);
-                sendLine(out, "OK");
-                return;
-            }
-
-            if (cmd.equals("WRITE")) {
-                if (parts.length < 4) { sendLine(out, "ERR bad_args"); return; }
-                String user = safeName(parts[1]);
-                String file = safeName(parts[2]);
-                if (user == null || file == null) { sendLine(out, "ERR bad_name"); return; }
-
-                int byteCount;
-                try {
-                    byteCount = Integer.parseInt(parts[3]);
-                } catch (NumberFormatException e) {
-                    sendLine(out, "ERR bad_len");
-                    return;
-                }
-                if (byteCount < 0 || byteCount > 5_000_000) {//5MB guard
-                    sendLine(out, "ERR len_range");
-                    return;
-                }
-
-                Path userDir = baseDir.resolve(user);
-                Files.createDirectories(userDir);
-                Path p = userDir.resolve(file);
-
-                byte[] data = client.getInputStream().readNBytes(byteCount);
-                if (data.length != byteCount) { sendLine(out, "ERR short_read"); return; }
-
-                Files.write(p, data);
-                sendLine(out, "OK");
-                return;
-            }
-
-            sendLine(out, "ERR unknown_cmd");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void serve(int port) throws IOException {
-        Files.createDirectories(baseDir);
-        try (ServerSocket server = new ServerSocket(port)) {
-            System.out.println("[STORAGE] Serving " + baseDir + " on port " + port);
-            while (true) {
-                Socket client = server.accept();
-                new Thread(() -> handle(client)).start();
-            }
-        }
-    }
-
-    public static void main(String[] args) throws Exception {
-        int port = (args.length >= 1) ? Integer.parseInt(args[0]) : 9101;
-        //base dir is the folder this class sits in
-        Path baseDir = Paths.get(".").toAbsolutePath().normalize();
-        new StorageServer(baseDir).serve(port);
-    }
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.*;
+
+public class StorageServer {
+
+    private final Path baseDir;
+
+    public StorageServer(Path baseDir) {
+        this.baseDir = baseDir;
+    }
+
+    private static void sendLine(OutputStream out, String s) throws IOException {
+        out.write((s + "\n").getBytes(StandardCharsets.UTF_8));
+        out.flush();
+    }
+
+    private static String safeName(String name) {
+        if (name == null) return null;
+        name = name.trim();
+        if (name.isEmpty()) return null;
+        if (name.contains("..") || name.contains("/") || name.contains("\\")) return null;
+        return name;
+    }
+
+    private static String readLineRaw(InputStream in) throws IOException {
+        ByteArrayOutputStream headerBuf = new ByteArrayOutputStream();
+        int b;
+        while ((b = in.read()) != -1) {
+            if (b == '\n') break;
+            headerBuf.write(b);
+            if (headerBuf.size() > 8192) return null;
+        }
+        if (headerBuf.size() == 0 && b == -1) return null;
+        return headerBuf.toString(StandardCharsets.UTF_8).trim();
+    }
+
+    private static byte[] readFully(InputStream in, int byteCount) throws IOException {
+        byte[] buf = new byte[byteCount];
+        int off = 0;
+        while (off < byteCount) {
+            int n = in.read(buf, off, byteCount - off);
+            if (n == -1) break;
+            off += n;
+        }
+        if (off != byteCount) return null;
+        return buf;
+    }
+
+    private void handle(Socket client) {
+        try (client) {
+            InputStream inRaw = client.getInputStream();
+            OutputStream outRaw = client.getOutputStream();
+
+            String line = readLineRaw(inRaw);
+            if (line == null || line.isEmpty()) return;
+
+            String[] parts = line.split(" ");
+            String cmd = parts[0].toUpperCase(Locale.ROOT);
+
+            if (cmd.equals("PING")) {
+                sendLine(outRaw, "OK");
+                return;
+            }
+
+            if (cmd.equals("LIST")) {
+                if (parts.length < 2) { sendLine(outRaw, "ERR bad_args"); return; }
+                String user = safeName(parts[1]);
+                if (user == null) { sendLine(outRaw, "ERR bad_user"); return; }
+
+                Path userDir = baseDir.resolve(user);
+                Files.createDirectories(userDir);
+
+                List<String> names = new ArrayList<>();
+                try (var stream = Files.list(userDir)) {
+                    stream.filter(Files::isRegularFile)
+                          .map(p -> p.getFileName().toString())
+                          .sorted()
+                          .forEach(names::add);
+                }
+
+                sendLine(outRaw, "OK " + names.size());
+                for (String n : names) sendLine(outRaw, n);
+                return;
+            }
+
+            if (cmd.equals("READ")) {
+                if (parts.length < 3) { sendLine(outRaw, "ERR bad_args"); return; }
+                String user = safeName(parts[1]);
+                String file = safeName(parts[2]);
+                if (user == null || file == null) { sendLine(outRaw, "ERR bad_name"); return; }
+
+                Path p = baseDir.resolve(user).resolve(file);
+                if (!Files.exists(p)) { sendLine(outRaw, "ERR not_found"); return; }
+
+                byte[] data = Files.readAllBytes(p);
+                sendLine(outRaw, "OK " + data.length);
+                outRaw.write(data);
+                outRaw.flush();
+                return;
+            }
+
+            if (cmd.equals("DELETE")) {
+                if (parts.length < 3) { sendLine(outRaw, "ERR bad_args"); return; }
+                String user = safeName(parts[1]);
+                String file = safeName(parts[2]);
+                if (user == null || file == null) { sendLine(outRaw, "ERR bad_name"); return; }
+
+                Path p = baseDir.resolve(user).resolve(file);
+                Files.deleteIfExists(p);
+                sendLine(outRaw, "OK");
+                return;
+            }
+
+            if (cmd.equals("WRITE")) {
+                if (parts.length < 4) { sendLine(outRaw, "ERR bad_args"); return; }
+                String user = safeName(parts[1]);
+                String file = safeName(parts[2]);
+                if (user == null || file == null) { sendLine(outRaw, "ERR bad_name"); return; }
+
+                int byteCount;
+                try {
+                    byteCount = Integer.parseInt(parts[3]);
+                } catch (NumberFormatException e) {
+                    sendLine(outRaw, "ERR bad_len");
+                    return;
+                }
+                if (byteCount < 0 || byteCount > 5_000_000) {
+                    sendLine(outRaw, "ERR len_range");
+                    return;
+                }
+
+                Path userDir = baseDir.resolve(user);
+                Files.createDirectories(userDir);
+                Path p = userDir.resolve(file);
+
+                byte[] data = readFully(inRaw, byteCount);
+                if (data == null) { sendLine(outRaw, "ERR short_read"); return; }
+
+                Files.write(p, data);
+                sendLine(outRaw, "OK");
+                return;
+            }
+
+            sendLine(outRaw, "ERR unknown_cmd");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void serve(int port) throws IOException {
+        Files.createDirectories(baseDir);
+        try (ServerSocket server = new ServerSocket(port)) {
+            System.out.println("[STORAGE] Serving " + baseDir + " on port " + port);
+            while (true) {
+                Socket client = server.accept();
+                new Thread(() -> handle(client)).start();
+            }
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        int port = (args.length >= 1) ? Integer.parseInt(args[0]) : 9101;
+        Path baseDir = Paths.get(".").toAbsolutePath().normalize();
+        new StorageServer(baseDir).serve(port);
+    }
 }
