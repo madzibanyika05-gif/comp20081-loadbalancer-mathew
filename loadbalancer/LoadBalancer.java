@@ -13,8 +13,8 @@ public class LoadBalancer {
 
     // backend storage nodes
     private static final List<InetSocketAddress> BACKENDS = List.of(
-            new InetSocketAddress("storage-a", 9001),
-            new InetSocketAddress("storage-b", 9002)
+            new InetSocketAddress("storage-a", 9101),
+            new InetSocketAddress("storage-b", 9102)
     );
 
     private static final int LISTEN_PORT = 9000;
