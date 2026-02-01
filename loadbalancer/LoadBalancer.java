@@ -5,13 +5,8 @@ import java.net.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- *
- * @author ntu-user
- */
 public class LoadBalancer {
 
-    // backend storage nodes
     private static final List<InetSocketAddress> BACKENDS = List.of(
             new InetSocketAddress("localhost", 9101),
             new InetSocketAddress("localhost", 9102)
@@ -27,9 +22,7 @@ public class LoadBalancer {
             while (true) {
                 Socket client = server.accept();
                 InetSocketAddress backend = nextBackend();
-                System.out.println("[LB] " + client.getRemoteSocketAddress()
-                        + " -> " + backend);
-
+                System.out.println("[LB] " + client.getRemoteSocketAddress() + " -> " + backend);
                 new Thread(() -> forward(client, backend)).start();
             }
         }
