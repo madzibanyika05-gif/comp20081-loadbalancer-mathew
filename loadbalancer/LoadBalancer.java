@@ -1,7 +1,11 @@
 package loadbalancer;
 
-import java.io.*;
-import java.net.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,12 +21,14 @@ public class LoadBalancer {
 
     public static void main(String[] args) throws Exception {
         System.out.println("[LB] LoadBalancer started on port " + LISTEN_PORT);
+        System.out.flush();
 
         try (ServerSocket server = new ServerSocket(LISTEN_PORT)) {
             while (true) {
                 Socket client = server.accept();
                 InetSocketAddress backend = nextBackend();
                 System.out.println("[LB] " + client.getRemoteSocketAddress() + " -> " + backend);
+                System.out.flush();
                 new Thread(() -> forward(client, backend)).start();
             }
         }
@@ -44,6 +50,7 @@ public class LoadBalancer {
             t2.join();
         } catch (Exception e) {
             System.out.println("[LB] ERROR: " + e.getMessage());
+            System.out.flush();
         } finally {
             try { client.close(); } catch (IOException ignored) {}
         }
