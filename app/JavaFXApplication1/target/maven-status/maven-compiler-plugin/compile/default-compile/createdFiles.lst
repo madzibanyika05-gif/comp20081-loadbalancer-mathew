@@ -9,6 +9,7 @@ com/mycompany/javafxapplication1/LocalSQLiteDB$SessionData.class
 com/mycompany/javafxapplication1/Metrics.class
 com/mycompany/javafxapplication1/MySQLDB.class
 com/mycompany/javafxapplication1/PasswordUtil.class
+com/mycompany/javafxapplication1/FileService$LbReply.class
 module-info.class
 com/mycompany/javafxapplication1/App.class
 com/mycompany/javafxapplication1/PrimaryController.class

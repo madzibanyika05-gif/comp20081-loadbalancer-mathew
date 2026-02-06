@@ -7,28 +7,34 @@ package com.mycompany.javafxapplication1;
  *
  * @author ntu-user
  */
-import java.util.stream.Collectors;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
 
 public class FileService {
 
-    private static final Path BASE_DIR = Configuration.STORAGE_LOCAL_DIR;
-    
+    private static final String LB_HOST = "localhost";
+    private static final int LB_PORT = 9000;
+
     private static final ConcurrentHashMap<String, Object> USER_LOCKS = new ConcurrentHashMap<>();
 
     private static Object lockForUser(String username) {
-        
         return USER_LOCKS.computeIfAbsent(username, u -> new Object());
     }
-    
+
     private static long msSince(long startNano) {
         return (System.nanoTime() - startNano) / 1_000_000;
     }
-    
+
     private static void maybeDelay(String op, String username, String filename) {
         if (!Configuration.SIMULATE_DELAY) return;
 
@@ -40,7 +46,7 @@ public class FileService {
 
         long t0 = System.nanoTime();
         try {
-            Thread.sleep(800);
+            Thread.sleep(delay);
             AppLogger.metric("ARTIFICIAL_DELAY op=" + op + " user=" + username + " file=" + filename, msSince(t0));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -48,29 +54,150 @@ public class FileService {
         }
     }
 
-    public static Path userDir(String username) throws IOException {
-        Path dir = BASE_DIR.resolve(username);
-        Files.createDirectories(dir);
-        return dir;
-    }
-    
     private static void validateFilename(String filename) {
+        if (filename == null) throw new SecurityException("Invalid filename");
         if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
             throw new SecurityException("Invalid filename");
         }
     }
-    
-    public static void writeTextFile(String username, String filename, String content)
-            throws IOException {
-        
+
+    private static void sendLine(OutputStream out, String s) throws IOException {
+        out.write((s + "\n").getBytes(StandardCharsets.UTF_8));
+        out.flush();
+    }
+
+    private static String readLine(InputStream in) throws IOException {
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        int b;
+        while ((b = in.read()) != -1) {
+            if (b == '\n') break;
+            buf.write(b);
+            if (buf.size() > 8192) return null;
+        }
+        if (buf.size() == 0 && b == -1) return null;
+        return buf.toString(StandardCharsets.UTF_8).trim();
+    }
+
+    private static byte[] readFully(InputStream in, int byteCount) throws IOException {
+        byte[] buf = new byte[byteCount];
+        int off = 0;
+        while (off < byteCount) {
+            int n = in.read(buf, off, byteCount - off);
+            if (n == -1) break;
+            off += n;
+        }
+        if (off != byteCount) return null;
+        return buf;
+    }
+
+    private static class LbReply {
+        final boolean ok;
+        final String line;
+        final byte[] data;
+
+        LbReply(boolean ok, String line, byte[] data) {
+            this.ok = ok;
+            this.line = line;
+            this.data = data;
+        }
+    }
+
+    private static LbReply lbWrite(String username, String filename, byte[] bytes) throws IOException {
+        try (Socket s = new Socket(LB_HOST, LB_PORT)) {
+            OutputStream out = s.getOutputStream();
+            InputStream in = s.getInputStream();
+
+            sendLine(out, "WRITE " + username + " " + filename + " " + bytes.length);
+            out.write(bytes);
+            out.flush();
+            s.shutdownOutput();
+
+            String resp = readLine(in);
+            if (resp == null) return new LbReply(false, "ERR no_response", null);
+            return new LbReply(resp.startsWith("OK"), resp, null);
+        }
+    }
+
+    private static LbReply lbRead(String username, String filename) throws IOException {
+        try (Socket s = new Socket(LB_HOST, LB_PORT)) {
+            OutputStream out = s.getOutputStream();
+            InputStream in = s.getInputStream();
+
+            sendLine(out, "READ " + username + " " + filename);
+            s.shutdownOutput();
+
+            String hdr = readLine(in);
+            if (hdr == null) return new LbReply(false, "ERR no_response", null);
+            if (!hdr.startsWith("OK")) return new LbReply(false, hdr, null);
+
+            String[] parts = hdr.split("\\s+");
+            if (parts.length < 2) return new LbReply(false, "ERR bad_header", null);
+
+            int n;
+            try {
+                n = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException e) {
+                return new LbReply(false, "ERR bad_len", null);
+            }
+
+            byte[] data = readFully(in, n);
+            if (data == null) return new LbReply(false, "ERR short_read", null);
+            return new LbReply(true, hdr, data);
+        }
+    }
+
+    private static LbReply lbDelete(String username, String filename) throws IOException {
+        try (Socket s = new Socket(LB_HOST, LB_PORT)) {
+            OutputStream out = s.getOutputStream();
+            InputStream in = s.getInputStream();
+
+            sendLine(out, "DELETE " + username + " " + filename);
+            s.shutdownOutput();
+
+            String resp = readLine(in);
+            if (resp == null) return new LbReply(false, "ERR no_response", null);
+            return new LbReply(resp.startsWith("OK"), resp, null);
+        }
+    }
+
+    private static List<String> lbList(String username) throws IOException {
+        try (Socket s = new Socket(LB_HOST, LB_PORT)) {
+            OutputStream out = s.getOutputStream();
+            InputStream in = s.getInputStream();
+
+            sendLine(out, "LIST " + username);
+            s.shutdownOutput();
+
+            String hdr = readLine(in);
+            if (hdr == null) throw new IOException("LIST failed: no_response");
+            if (!hdr.startsWith("OK")) throw new IOException("LIST failed: " + hdr);
+
+            String[] parts = hdr.split("\\s+");
+            int count = 0;
+            if (parts.length >= 2) {
+                try { count = Integer.parseInt(parts[1]); } catch (NumberFormatException ignored) {}
+            }
+
+            List<String> outNames = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                String name = readLine(in);
+                if (name == null) break;
+                outNames.add(name);
+            }
+            Collections.sort(outNames);
+            return outNames;
+        }
+    }
+
+    public static void writeTextFile(String username, String filename, String content) throws IOException {
         long t = Metrics.start();
         long t0 = System.nanoTime();
+
         maybeDelay("WRITE", username, filename);
         validateFilename(filename);
+
         synchronized (lockForUser(username)) {
-            Path userDir = userDir(username);
-            Path file = userDir.resolve(filename);
-            byte[] plaintext = content.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            byte[] plaintext = content.getBytes(StandardCharsets.UTF_8);
             byte[] encrypted;
             try {
                 encrypted = CryptUtil.encrypt(plaintext);
@@ -78,107 +205,97 @@ public class FileService {
                 AppLogger.error("ENCRYPT failed user=" + username + " file=" + filename, ex);
                 throw new IOException("Encryption failed", ex);
             }
-            Files.write(file, encrypted);
+
+            LbReply r = lbWrite(username, filename, encrypted);
+            if (!r.ok) {
+                AppLogger.warn("LB_WRITE failed user=" + username + " file=" + filename + " resp=" + r.line);
+                throw new IOException("LB_WRITE failed: " + r.line);
+            }
         }
+
         AppLogger.metric("FILE_WRITE user=" + username + " file=" + filename, msSince(t0));
         Metrics.end("file.write", t);
     }
-    
+
+    public static void writeUserFile(String username, String filename, String content) throws IOException {
+        writeTextFile(username, filename, content);
+    }
+
     public static void deleteFile(String username, String filename) throws IOException {
         long t = Metrics.start();
         long t0 = System.nanoTime();
+
         maybeDelay("DELETE", username, filename);
+        validateFilename(filename);
+
         synchronized (lockForUser(username)) {
-            validateFilename(filename);
-            Path file = userDir(username).resolve(filename);
-            Files.deleteIfExists(file);
+            LbReply r = lbDelete(username, filename);
+            if (!r.ok) {
+                AppLogger.warn("LB_DELETE failed user=" + username + " file=" + filename + " resp=" + r.line);
+                throw new IOException("LB_DELETE failed: " + r.line);
+            }
         }
+
         AppLogger.metric("FILE_DELETE user=" + username + " file=" + filename, msSince(t0));
         Metrics.end("file.delete", t);
     }
-    
-    public static String readTextFile(String username, String filename)
-            throws IOException {
-        
+
+    public static String readTextFile(String username, String filename) throws IOException {
         long t = Metrics.start();
         long t0 = System.nanoTime();
+
         maybeDelay("READ", username, filename);
         validateFilename(filename);
+
         String out;
         synchronized (lockForUser(username)) {
-            Path file = userDir(username).resolve(filename);
-            byte[] data = Files.readAllBytes(file);
+            LbReply r = lbRead(username, filename);
+            if (!r.ok || r.data == null) {
+                AppLogger.warn("LB_READ failed user=" + username + " file=" + filename + " resp=" + r.line);
+                throw new IOException("LB_READ failed: " + r.line);
+            }
 
             try {
-                byte[] plaintext = CryptUtil.decrypt(data);
-                out = new String(plaintext, java.nio.charset.StandardCharsets.UTF_8);
+                byte[] plaintext = CryptUtil.decrypt(r.data);
+                out = new String(plaintext, StandardCharsets.UTF_8);
             } catch (Exception ex) {
-                // Backwards compatible: if file was created before encryption, treat as plaintext
                 AppLogger.warn("DECRYPT failed - treating as plaintext user=" + username + " file=" + filename);
-                out = new String(data, java.nio.charset.StandardCharsets.UTF_8);
+                out = new String(r.data, StandardCharsets.UTF_8);
             }
         }
+
         AppLogger.metric("FILE_READ user=" + username + " file=" + filename, msSince(t0));
         Metrics.end("file.read", t);
         return out;
     }
-    
-    public static void writeUserFile(String username, String filename, String content) throws IOException {
-        long t = Metrics.start();
-        long t0 = System.nanoTime();
-        maybeDelay("WRITE", username, filename);
-        validateFilename(filename);
-        synchronized (lockForUser(username)) {
-            Path userDir = userDir(username);
-            Path file = userDir.resolve(filename);
 
-            byte[] plaintext = content.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-            byte[] encrypted;
-            try {
-                encrypted = CryptUtil.encrypt(plaintext);
-            } catch (Exception ex) {
-                AppLogger.error("ENCRYPT failed user=" + username + " file=" + filename, ex);
-                throw new IOException("Encryption failed", ex);
-            }
-            Files.write(file, encrypted);
-        }
-        AppLogger.metric("FILE_WRITE user=" + username + " file=" + filename, msSince(t0));
-        Metrics.end("file.write", t);
-    }
-    
     public static boolean fileExists(String username, String filename) {
         try {
-            Path file = userDir(username).resolve(filename);
-            return Files.exists(file);
-        } catch (IOException e) {
+            validateFilename(filename);
+            List<String> files = lbList(username);
+            return files.contains(filename);
+        } catch (Exception e) {
             return false;
         }
     }
-    
-    public static java.util.List<String> listUserFiles(String username) throws IOException {
+
+    public static List<String> listUserFiles(String username) throws IOException {
         long t = Metrics.start();
         long t0 = System.nanoTime();
-        java.util.List<String> files;
-        
-        maybeDelay("LIST", username, "*");
-        synchronized (lockForUser(username)) {
-            java.nio.file.Path userDir = Configuration.STORAGE_LOCAL_DIR.resolve(username);
 
-            if (!java.nio.file.Files.exists(userDir)) {
-                files = java.util.Collections.emptyList();
-            } else {
-                try (java.util.stream.Stream<java.nio.file.Path> stream = java.nio.file.Files.list(userDir)) {
-                    files = stream
-                        .filter(java.nio.file.Files::isRegularFile)
-                        .map(p -> p.getFileName().toString())
-                        .sorted()
-                        .collect(Collectors.toList());
-                }
-            }
+        maybeDelay("LIST", username, "*");
+
+        List<String> files;
+        synchronized (lockForUser(username)) {
+            files = lbList(username);
         }
 
         AppLogger.metric("FILE_LIST user=" + username, msSince(t0));
         Metrics.end("file.list", t);
         return files;
+    }
+
+    public static Path userDir(String username) throws IOException {
+        throw new UnsupportedOperationException("userDir is not used when storage is behind load balancer");
     }
 }
