@@ -1,25 +1,30 @@
 package loadbalancer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class LoadBalancer {
 
-    private static final List<InetSocketAddress> BACKENDS = List.of(
-            new InetSocketAddress("localhost", 9101),
-            new InetSocketAddress("localhost", 9102)
-    );
+    private static final List<InetSocketAddress> BACKENDS = loadBackends();
 
     private static final int LISTEN_PORT = 9000;
 
+    private static final int HC_INTERVAL_MS = 1000;
+    private static final int CONNECT_TIMEOUT_MS = 800;
+    private static final int IO_TIMEOUT_MS = 1200;
+
+    private static final boolean[] healthy = new boolean[BACKENDS.size()];
+    private static final Object healthLock = new Object();
+
     public static void main(String[] args) throws Exception {
+        Arrays.fill(healthy, true);
+
+        ScheduledExecutorService sch = Executors.newSingleThreadScheduledExecutor();
+        sch.scheduleAtFixedRate(LoadBalancer::runHealthChecks, 0, HC_INTERVAL_MS, TimeUnit.MILLISECONDS);
+
         System.out.println("[LB] LoadBalancer started on port " + LISTEN_PORT);
         System.out.flush();
 
@@ -28,6 +33,59 @@ public class LoadBalancer {
                 Socket client = server.accept();
                 new Thread(() -> handleClient(client)).start();
             }
+        }
+    }
+
+    private static List<InetSocketAddress> loadBackends() {
+        String raw = System.getenv().getOrDefault("LB_BACKENDS", "localhost:9101,localhost:9102");
+        List<InetSocketAddress> out = new ArrayList<>();
+
+        for (String item : raw.split(",")) {
+            item = item.trim();
+            if (item.isEmpty()) continue;
+
+            String[] hp = item.split(":");
+            if (hp.length != 2) continue;
+
+            String host = hp[0].trim();
+            int port = Integer.parseInt(hp[1].trim());
+
+            out.add(new InetSocketAddress(host, port));
+        }
+
+        if (out.isEmpty()) {
+            throw new IllegalStateException("No backends configured (LB_BACKENDS empty/invalid)");
+        }
+
+        return out;
+    }
+
+    private static void runHealthChecks() {
+        for (int i = 0; i < BACKENDS.size(); i++) {
+            InetSocketAddress addr = BACKENDS.get(i);
+            boolean ok = ping(addr);
+            synchronized (healthLock) {
+                healthy[i] = ok;
+            }
+        }
+    }
+
+    private static boolean ping(InetSocketAddress addr) {
+        try (Socket s = new Socket()) {
+            s.connect(addr, CONNECT_TIMEOUT_MS);
+            s.setSoTimeout(IO_TIMEOUT_MS);
+
+            OutputStream out = s.getOutputStream();
+            InputStream in = s.getInputStream();
+
+            out.write("PING\n".getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            s.shutdownOutput();
+
+            String resp = readLine(in);
+            return resp != null && resp.startsWith("OK");
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -43,9 +101,9 @@ public class LoadBalancer {
 
             String header = new String(headerBytes, StandardCharsets.UTF_8).trim();
             String username = extractUsername(header);
-            InetSocketAddress preferred = pickBackend(username);
 
-            backend = connectWithFallback(preferred);
+            int idx = pickBackendIndex(username);
+            backend = connectHealthyBackend(idx);
 
             InetSocketAddress chosen = (InetSocketAddress) backend.getRemoteSocketAddress();
             System.out.println("[LB] " + client.getRemoteSocketAddress()
@@ -53,6 +111,8 @@ public class LoadBalancer {
                     + " cmd=\"" + header + "\""
                     + " -> " + chosen);
             System.out.flush();
+
+            backend.setSoTimeout(IO_TIMEOUT_MS);
 
             InputStream bin = backend.getInputStream();
             OutputStream bout = backend.getOutputStream();
@@ -67,8 +127,6 @@ public class LoadBalancer {
             t2.join();
 
         } catch (Exception e) {
-            System.out.println("[LB] ERROR: " + e.getMessage());
-            System.out.flush();
             try {
                 OutputStream cout = client.getOutputStream();
                 cout.write(("ERR backend_unavailable\n").getBytes(StandardCharsets.UTF_8));
@@ -80,16 +138,44 @@ public class LoadBalancer {
         }
     }
 
-    private static byte[] readLineBytes(InputStream in) throws IOException {
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        int b;
-        while ((b = in.read()) != -1) {
-            buf.write(b);
-            if (b == '\n') break;
-            if (buf.size() > 8192) throw new IOException("Header too long");
+    private static Socket connectHealthyBackend(int preferredIdx) throws IOException {
+        List<Integer> order = new ArrayList<>();
+        order.add(preferredIdx);
+        for (int i = 0; i < BACKENDS.size(); i++) if (i != preferredIdx) order.add(i);
+
+        IOException last = null;
+
+        for (int idx : order) {
+            if (!isHealthy(idx)) continue;
+            InetSocketAddress addr = BACKENDS.get(idx);
+            try {
+                Socket s = new Socket();
+                s.connect(addr, CONNECT_TIMEOUT_MS);
+                return s;
+            } catch (IOException e) {
+                last = e;
+                setHealthy(idx, false);
+            }
         }
-        if (buf.size() == 0 && b == -1) return null;
-        return buf.toByteArray();
+
+        throw new IOException("No healthy backends", last);
+    }
+
+    private static boolean isHealthy(int idx) {
+        synchronized (healthLock) {
+            return healthy[idx];
+        }
+    }
+
+    private static void setHealthy(int idx, boolean ok) {
+        synchronized (healthLock) {
+            healthy[idx] = ok;
+        }
+    }
+
+    private static int pickBackendIndex(String username) {
+        if (username == null || username.isBlank()) return 0;
+        return Math.floorMod(username.hashCode(), BACKENDS.size());
     }
 
     private static String extractUsername(String header) {
@@ -104,35 +190,28 @@ public class LoadBalancer {
         return null;
     }
 
-    private static InetSocketAddress pickBackend(String username) {
-        if (username == null || username.isBlank()) return BACKENDS.get(0);
-        int idx = Math.floorMod(username.hashCode(), BACKENDS.size());
-        return BACKENDS.get(idx);
+    private static byte[] readLineBytes(InputStream in) throws IOException {
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        int b;
+        while ((b = in.read()) != -1) {
+            buf.write(b);
+            if (b == '\n') break;
+            if (buf.size() > 8192) throw new IOException("Header too long");
+        }
+        if (buf.size() == 0 && b == -1) return null;
+        return buf.toByteArray();
     }
 
-    private static Socket connectWithFallback(InetSocketAddress preferred) throws IOException {
-        IOException last = null;
-
-        try {
-            Socket s = new Socket();
-            s.connect(preferred, 1000);
-            return s;
-        } catch (IOException e) {
-            last = e;
+    private static String readLine(InputStream in) throws IOException {
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        int b;
+        while ((b = in.read()) != -1) {
+            if (b == '\n') break;
+            buf.write(b);
+            if (buf.size() > 8192) return null;
         }
-
-        for (InetSocketAddress addr : BACKENDS) {
-            if (addr.equals(preferred)) continue;
-            try {
-                Socket s = new Socket();
-                s.connect(addr, 1000);
-                return s;
-            } catch (IOException e) {
-                last = e;
-            }
-        }
-
-        throw new IOException("No backends available", last);
+        if (buf.size() == 0 && b == -1) return null;
+        return buf.toString(StandardCharsets.UTF_8).trim();
     }
 
     private static Thread pipe(InputStream in, OutputStream out) {
