@@ -23,6 +23,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import com.mycompany.javafxapplication1.AppLogger;
 import com.mycompany.javafxapplication1.Session;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Label;
 
 
 
@@ -58,6 +60,12 @@ public class SecondaryController {
     @FXML
     private javafx.scene.control.ChoiceBox<String> permChoice;
     
+    @FXML
+    private javafx.scene.control.TextArea metricsArea;
+
+    @FXML
+    private Label metricsLabel;
+
     @FXML
     private void RefreshBtnHandler(ActionEvent event){
         try {
@@ -316,6 +324,16 @@ public class SecondaryController {
         }
     }
     
+    @FXML
+    private void viewMetrics() {
+        if (!Session.isAdmin()) return;
+        try {
+            metricsArea.setText(FileService.fetchLoadBalancerMetrics());
+        } catch (Exception e) {
+            metricsArea.setText("ERROR: could not fetch metrics");
+        }
+    }
+    
     private void applyRolePermissions() {
         boolean admin = Session.isAdmin();
 
@@ -326,6 +344,15 @@ public class SecondaryController {
     //user delte shows on admin
         deleteUserBtn.setVisible(admin);
         deleteUserBtn.setManaged(admin);
+        
+        if (metricsArea != null) {
+            metricsArea.setVisible(admin);
+            metricsArea.setManaged(admin);
+        }
+        if (metricsLabel != null) {
+            metricsLabel.setVisible(admin);
+            metricsLabel.setManaged(admin);
+        }
     }
     
     private static class FileRef {
