@@ -43,4 +43,7 @@ public final class Metrics {
 
         return sb.toString();
     }
+    public static String getSummary() {
+        return snapshot();
+    }
 }

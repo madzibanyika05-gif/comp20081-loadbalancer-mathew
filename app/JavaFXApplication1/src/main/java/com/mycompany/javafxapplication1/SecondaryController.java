@@ -65,6 +65,9 @@ public class SecondaryController {
 
     @FXML
     private Label metricsLabel;
+    
+    @FXML
+    private Button metricsBtn;
 
     @FXML
     private void RefreshBtnHandler(ActionEvent event){
@@ -345,14 +348,8 @@ public class SecondaryController {
         deleteUserBtn.setVisible(admin);
         deleteUserBtn.setManaged(admin);
         
-        if (metricsArea != null) {
-            metricsArea.setVisible(admin);
-            metricsArea.setManaged(admin);
-        }
-        if (metricsLabel != null) {
-            metricsLabel.setVisible(admin);
-            metricsLabel.setManaged(admin);
-        }
+        metricsBtn.setVisible(admin);
+        metricsBtn.setManaged(admin);
     }
     
     private static class FileRef {

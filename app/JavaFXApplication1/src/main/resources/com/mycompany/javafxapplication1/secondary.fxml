@@ -69,9 +69,8 @@
         <Button onAction="#shareSelectedFile" text="Share" />
         <Button onAction="#revokeSelectedFile" text="Revoke" />
         <Button fx:id="metricsBtn" onAction="#openMetrics" text="Performance Metrics" />
-
+        <Button fx:id="deleteUserBtn" onAction="#deleteSelectedUser" text="Delete Selected User" />
         <Button onAction="#switchToPrimary" text="Return to Login" />
-    <Button fx:id="deleteUserBtn" onAction="#deleteSelectedUser" text="Delete Selected User" />
     </HBox>
     </children>
     <padding>
