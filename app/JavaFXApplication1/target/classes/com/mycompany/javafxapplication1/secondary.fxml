@@ -43,7 +43,7 @@
       </GridPane>
       <TableView fx:id="dataTableView" prefHeight="200.0" prefWidth="200.0" />
       <Label fx:id="metricsLabel" text="Performance Metrics" />
-<Tex    tArea fx:id="metricsArea"
+        <TextArea fx:id="metricsArea"
             prefHeight="180.0"
             prefWidth="600.0"
             editable="false"
