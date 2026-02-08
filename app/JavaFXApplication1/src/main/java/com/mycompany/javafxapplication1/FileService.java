@@ -407,11 +407,29 @@ public class FileService {
 
         maybeDelay("LIST", username, "*");
 
-        List<String> files;
+        List<String> raw;
         synchronized (lockForUser(username)) {
-            files = lbList(username);
+            raw = lbList(username);
+        }
+        java.util.Set<String> manifests = new java.util.HashSet<>();
+        java.util.Set<String> normals = new java.util.HashSet<>();
+
+        for (String name : raw) {
+            if (isManifest(name)) {
+                String base = name.substring(0, name.length() - MANIFEST_SUFFIX.length());
+                manifests.add(base);
+            } else if (isPart(name)) {
+                // ignore parts
+            } else {
+                normals.add(name);
+            }
         }
 
+        java.util.Set<String> out = new java.util.HashSet<>();
+        out.addAll(normals);
+        out.addAll(manifests);
+        List<String> files = new ArrayList<>(out);
+        files.sort(String::compareToIgnoreCase);
         AppLogger.metric("FILE_LIST user=" + username, msSince(t0));
         Metrics.end("file.list", t);
         return files;
