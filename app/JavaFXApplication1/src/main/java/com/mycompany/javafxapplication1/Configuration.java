@@ -27,4 +27,10 @@ public final class Configuration {
         Integer.parseInt(System.getenv().getOrDefault("DELAY_MIN_MS", "30000")); //3 to
     public static final int DELAY_MAX_MS =
         Integer.parseInt(System.getenv().getOrDefault("DELAY_MAX_MS", "90000"));//9 second delay
+    
+    public static final int CHUNK_SIZE_BYTES =
+        Integer.parseInt(System.getenv().getOrDefault("CHUNK_SIZE_BYTES", "262144")); //256KB
+
+    public static final int CHUNK_THRESHOLD_BYTES =
+        Integer.parseInt(System.getenv().getOrDefault("CHUNK_THRESHOLD_BYTES", "524288")); //512KB
 }

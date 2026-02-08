@@ -42,7 +42,7 @@ public class FileService {
     }
 
     private static boolean isPart(String name) {
-        return name != null && name.contains(PART_PREFIX);
+        return name != null && name.matches(".*\\.part\\d{5}$");
     }
 
     private static Integer parsePartIndex(String name, String base) {
@@ -290,6 +290,14 @@ public class FileService {
                 Metrics.end("file.write", t);
                 return;
             }
+            try {//cleanup previous chunked version if exists
+                LbReply oldM = lbRead(username, manifestName(filename));
+                if (oldM.ok && oldM.data != null) {
+                    int oldCount = parseManifestCount(new String(oldM.data, StandardCharsets.UTF_8));
+                    for (int i = 0; i < oldCount; i++) lbDelete(username, partName(filename, i));
+                    lbDelete(username, manifestName(filename));
+                }
+            } catch (Exception ignored) {}
             //big files: write chunks and delete any old single file version
             int count = chunkCountForBytes(encrypted.length, CHUNK_SIZE);
 
@@ -395,7 +403,7 @@ public class FileService {
         try {
             validateFilename(filename);
             List<String> files = lbList(username);
-            return files.contains(filename);
+            return files.contains(filename) || files.contains(manifestName(filename));
         } catch (Exception e) {
             return false;
         }
