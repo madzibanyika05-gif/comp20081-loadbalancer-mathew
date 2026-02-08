@@ -188,6 +188,26 @@ public class FileService {
             return outNames;
         }
     }
+    
+    public static String fetchLoadBalancerMetrics() throws IOException {
+        try (Socket s = new Socket("localhost", 9000)) {
+            s.setSoTimeout(2000);
+            OutputStream out = s.getOutputStream();
+            InputStream in = s.getInputStream();
+
+            out.write("METRICS\n".getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            s.shutdownOutput();
+
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            byte[] tmp = new byte[4096];
+            int n;
+            while ((n = in.read(tmp)) != -1) {
+                buf.write(tmp, 0, n);
+            }
+            return buf.toString(StandardCharsets.UTF_8);
+        }
+    }
 
     public static void writeTextFile(String username, String filename, String content) throws IOException {
         long t = Metrics.start();
