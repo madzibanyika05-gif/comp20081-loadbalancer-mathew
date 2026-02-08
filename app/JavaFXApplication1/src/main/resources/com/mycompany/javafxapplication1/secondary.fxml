@@ -13,7 +13,6 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.TextArea?>
 
 <VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/25.0.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.javafxapplication1.SecondaryController">
     <children>
@@ -42,12 +41,6 @@
          </children>
       </GridPane>
       <TableView fx:id="dataTableView" prefHeight="200.0" prefWidth="200.0" />
-      <Label fx:id="metricsLabel" text="Performance Metrics" />
-        <TextArea fx:id="metricsArea"
-            prefHeight="180.0"
-            prefWidth="600.0"
-            editable="false"
-            wrapText="false" />
       <GridPane>
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -75,6 +68,7 @@
         <ChoiceBox fx:id="permChoice" />
         <Button onAction="#shareSelectedFile" text="Share" />
         <Button onAction="#revokeSelectedFile" text="Revoke" />
+        <Button fx:id="metricsBtn" onAction="#openMetrics" text="Performance Metrics" />
 
         <Button onAction="#switchToPrimary" text="Return to Login" />
     <Button fx:id="deleteUserBtn" onAction="#deleteSelectedUser" text="Delete Selected User" />
