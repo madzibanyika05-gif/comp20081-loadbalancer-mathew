@@ -261,7 +261,6 @@ public class FileService {
     public static void writeTextFile(String username, String filename, String content) throws IOException {
         long t = Metrics.start();
         long t0 = System.nanoTime();
-
         maybeDelay("WRITE", username, filename);
         validateFilename(filename);
 
@@ -274,14 +273,40 @@ public class FileService {
                 AppLogger.error("ENCRYPT failed user=" + username + " file=" + filename, ex);
                 throw new IOException("Encryption failed", ex);
             }
-
-            LbReply r = lbWrite(username, filename, encrypted);
-            if (!r.ok) {
-                AppLogger.warn("LB_WRITE failed user=" + username + " file=" + filename + " resp=" + r.line);
-                throw new IOException("LB_WRITE failed: " + r.line);
+            //small enough: store as normal single file, and clean up any old chunked version
+            if (encrypted.length <= CHUNK_SIZE) {
+                LbReply r = lbWrite(username, filename, encrypted);
+                if (!r.ok) throw new IOException("LB_WRITE failed: " + r.line);
+            //cleanup chunked leftovers if they exist
+                try {
+                    LbReply m = lbRead(username, manifestName(filename));
+                    if (m.ok && m.data != null) {
+                        int count = parseManifestCount(new String(m.data, StandardCharsets.UTF_8));
+                        for (int i = 0; i < count; i++) lbDelete(username, partName(filename, i));
+                        lbDelete(username, manifestName(filename));
+                    }
+                } catch (Exception ignored) {}
+                AppLogger.metric("FILE_WRITE user=" + username + " file=" + filename, msSince(t0));
+                Metrics.end("file.write", t);
+                return;
             }
-        }
+            //big files: write chunks and delete any old single file version
+            int count = chunkCountForBytes(encrypted.length, CHUNK_SIZE);
 
+            for (int i = 0; i < count; i++) {
+                int start = i * CHUNK_SIZE;
+                int end = Math.min(start + CHUNK_SIZE, encrypted.length);
+                byte[] chunk = java.util.Arrays.copyOfRange(encrypted, start, end);
+
+                LbReply pr = lbWrite(username, partName(filename, i), chunk);
+                if (!pr.ok) throw new IOException("LB_WRITE part failed: " + pr.line);
+            }
+
+            byte[] manifestBytes = buildManifest(count).getBytes(StandardCharsets.UTF_8);
+            LbReply mr = lbWrite(username, manifestName(filename), manifestBytes);
+            if (!mr.ok) throw new IOException("LB_WRITE manifest failed: " + mr.line);//remove old single file if it existed
+            try { lbDelete(username, filename); } catch (Exception ignored) {}
+        }
         AppLogger.metric("FILE_WRITE user=" + username + " file=" + filename, msSince(t0));
         Metrics.end("file.write", t);
     }
@@ -312,18 +337,38 @@ public class FileService {
     public static String readTextFile(String username, String filename) throws IOException {
         long t = Metrics.start();
         long t0 = System.nanoTime();
-
         maybeDelay("READ", username, filename);
         validateFilename(filename);
 
         String out;
         synchronized (lockForUser(username)) {
-            LbReply r = lbRead(username, filename);
-            if (!r.ok || r.data == null) {
-                AppLogger.warn("LB_READ failed user=" + username + " file=" + filename + " resp=" + r.line);
-                throw new IOException("LB_READ failed: " + r.line);
+            //Attempts to chunck first
+            LbReply m = lbRead(username, manifestName(filename));
+            if (m.ok && m.data != null) {
+                int count = parseManifestCount(new String(m.data, StandardCharsets.UTF_8));
+                ByteArrayOutputStream combined = new ByteArrayOutputStream();
+                for (int i = 0; i < count; i++) {
+                    LbReply pr = lbRead(username, partName(filename, i));
+                    if (!pr.ok || pr.data == null) {
+                        throw new IOException("Missing chunk: " + partName(filename, i));
+                    }
+                    combined.write(pr.data);
+                }
+                byte[] encryptedAll = combined.toByteArray();
+                try {
+                    byte[] plaintext = CryptUtil.decrypt(encryptedAll);
+                    out = new String(plaintext, StandardCharsets.UTF_8);
+                } catch (Exception ex) {
+                    AppLogger.warn("DECRYPT failed - treating as plaintext user=" + username + " file=" + filename);
+                    out = new String(encryptedAll, StandardCharsets.UTF_8);
+                }
+                AppLogger.metric("FILE_READ user=" + username + " file=" + filename, msSince(t0));
+                Metrics.end("file.read", t);
+                return out;
             }
-
+            //fallback for single file
+            LbReply r = lbRead(username, filename);
+            if (!r.ok || r.data == null) throw new IOException("LB_READ failed: " + r.line);
             try {
                 byte[] plaintext = CryptUtil.decrypt(r.data);
                 out = new String(plaintext, StandardCharsets.UTF_8);
@@ -332,7 +377,6 @@ public class FileService {
                 out = new String(r.data, StandardCharsets.UTF_8);
             }
         }
-
         AppLogger.metric("FILE_READ user=" + username + " file=" + filename, msSince(t0));
         Metrics.end("file.read", t);
         return out;
