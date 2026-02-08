@@ -24,6 +24,55 @@ public class FileService {
 
     private static final String LB_HOST = "localhost";
     private static final int LB_PORT = 9000;
+    
+    private static final int CHUNK_SIZE = 64 * 1024;
+    private static final String MANIFEST_SUFFIX = ".manifest";
+    private static final String PART_PREFIX = ".part";
+
+    private static String manifestName(String filename) {
+        return filename + MANIFEST_SUFFIX;
+    }
+
+    private static String partName(String filename, int idx) {
+        return filename + PART_PREFIX + String.format("%05d", idx);
+    }
+
+    private static boolean isManifest(String name) {
+        return name != null && name.endsWith(MANIFEST_SUFFIX);
+    }
+
+    private static boolean isPart(String name) {
+        return name != null && name.contains(PART_PREFIX);
+    }
+
+    private static Integer parsePartIndex(String name, String base) {
+        String prefix = base + PART_PREFIX;
+        if (!name.startsWith(prefix)) return null;
+        String s = name.substring(prefix.length());
+        if (s.length() != 5) return null;
+        try { return Integer.parseInt(s); } catch (NumberFormatException e) { return null; }
+    }
+
+    private static int chunkCountForBytes(int totalBytes, int chunkSize) {
+        return (totalBytes + chunkSize - 1) / chunkSize;
+    }
+
+    private static String buildManifest(int chunkCount) {
+        return "COUNT=" + chunkCount + "\n";
+    }
+
+    private static int parseManifestCount(String manifestText) throws IOException {
+        if (manifestText == null) throw new IOException("Bad manifest");
+        String[] lines = manifestText.split("\\R");
+        for (String line : lines) {
+            line = line.trim();
+            if (line.startsWith("COUNT=")) {
+                String v = line.substring("COUNT=".length()).trim();
+                try { return Integer.parseInt(v); } catch (NumberFormatException ignored) {}
+            }
+        }
+        throw new IOException("Bad manifest");
+    }
 
     private static final ConcurrentHashMap<String, Object> USER_LOCKS = new ConcurrentHashMap<>();
 
