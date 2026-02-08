@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="15"
+      alignment="CENTER"
+      xmlns="http://javafx.com/javafx/25.0.0"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.mycompany.javafxapplication1.MetricsController">
+
+    <children>
+        <Label text="Performance Metrics" />
+
+        <TextArea fx:id="metricsArea"
+                  prefWidth="700"
+                  prefHeight="400"
+                  editable="false"
+                  wrapText="false"/>
+
+        <Button text="Back"
+                onAction="#goBack"/>
+    </children>
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+</VBox>

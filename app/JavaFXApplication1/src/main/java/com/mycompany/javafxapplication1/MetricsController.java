@@ -7,6 +7,10 @@ package com.mycompany.javafxapplication1;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 /**
  *
  * @author ntu-user
@@ -23,11 +27,23 @@ public class MetricsController {
             return;
         }
 
-        metricsArea.setText(Metrics.getSummary());
+        metricsArea.setText(Metrics.snapshot());
     }
 
     @FXML
     private void goBack(ActionEvent event) {
-        App.setRoot("secondary");
+        try {
+            Stage stage = (Stage) metricsArea.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("secondary.fxml"));
+            Parent root = loader.load();
+
+            SecondaryController controller = loader.getController();
+        controller.initialise(Session.getUsername());
+
+            stage.setScene(new Scene(root, 640, 480));
+            stage.setTitle("Show Users");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

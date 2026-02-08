@@ -61,12 +61,6 @@ public class SecondaryController {
     private javafx.scene.control.ChoiceBox<String> permChoice;
     
     @FXML
-    private javafx.scene.control.TextArea metricsArea;
-
-    @FXML
-    private Label metricsLabel;
-    
-    @FXML
     private Button metricsBtn;
 
     @FXML
@@ -328,12 +322,17 @@ public class SecondaryController {
     }
     
     @FXML
-    private void viewMetrics() {
+    private void openMetrics() {
         if (!Session.isAdmin()) return;
+
         try {
-            metricsArea.setText(FileService.fetchLoadBalancerMetrics());
+            Stage stage = (Stage) userTextField.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("metrics.fxml"));
+            Parent root = loader.load();
+            stage.setScene(new Scene(root, 640, 480));
+            stage.setTitle("Performance Metrics");
         } catch (Exception e) {
-            metricsArea.setText("ERROR: could not fetch metrics");
+            e.printStackTrace();
         }
     }
     
@@ -348,8 +347,10 @@ public class SecondaryController {
         deleteUserBtn.setVisible(admin);
         deleteUserBtn.setManaged(admin);
         
-        metricsBtn.setVisible(admin);
-        metricsBtn.setManaged(admin);
+        if (metricsBtn != null) {
+            metricsBtn.setVisible(admin);
+            metricsBtn.setManaged(admin);
+        }
     }
     
     private static class FileRef {
