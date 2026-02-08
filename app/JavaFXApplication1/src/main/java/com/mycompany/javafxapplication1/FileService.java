@@ -318,18 +318,27 @@ public class FileService {
     public static void deleteFile(String username, String filename) throws IOException {
         long t = Metrics.start();
         long t0 = System.nanoTime();
-
         maybeDelay("DELETE", username, filename);
         validateFilename(filename);
-
+        
         synchronized (lockForUser(username)) {
-            LbReply r = lbDelete(username, filename);
-            if (!r.ok) {
-                AppLogger.warn("LB_DELETE failed user=" + username + " file=" + filename + " resp=" + r.line);
-                throw new IOException("LB_DELETE failed: " + r.line);
-            }
-        }
+            LbReply m = lbRead(username, manifestName(filename));
+            if (m.ok && m.data != null) {
+                int count = parseManifestCount(new String(m.data, StandardCharsets.UTF_8));
+                for (int i = 0; i < count; i++) {
+                    lbDelete(username, partName(filename, i));
+                }
+                lbDelete(username, manifestName(filename));
+                // also attempt delete base file just in case
+                try { lbDelete(username, filename); } catch (Exception ignored) {}
 
+                AppLogger.metric("FILE_DELETE user=" + username + " file=" + filename, msSince(t0));
+                Metrics.end("file.delete", t);
+                return;
+            }
+            LbReply r = lbDelete(username, filename);
+            if (!r.ok) throw new IOException("LB_DELETE failed: " + r.line);
+        }
         AppLogger.metric("FILE_DELETE user=" + username + " file=" + filename, msSince(t0));
         Metrics.end("file.delete", t);
     }
