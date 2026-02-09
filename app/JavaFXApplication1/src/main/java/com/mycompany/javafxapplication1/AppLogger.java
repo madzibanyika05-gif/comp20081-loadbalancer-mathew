@@ -46,7 +46,7 @@ public class AppLogger {
         writeLine("METRIC", name + " took " + ms + "ms");
     }
     
-    public static String readLogTail(int maxLines) throws IOException {
+    public static String readLogTail(int maxLines) throws IOException {//method to read last N line in log file to keep things message small and clean
         java.nio.file.Path p = java.nio.file.Paths.get("app.log");
 
         if (!java.nio.file.Files.exists(p)) {
