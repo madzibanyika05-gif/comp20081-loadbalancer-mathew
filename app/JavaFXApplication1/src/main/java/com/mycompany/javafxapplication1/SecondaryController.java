@@ -62,6 +62,9 @@ public class SecondaryController {
     
     @FXML
     private Button metricsBtn;
+    
+    @FXML
+    private Button logsBtn;
 
     @FXML
     private void RefreshBtnHandler(ActionEvent event){
@@ -336,6 +339,20 @@ public class SecondaryController {
         }
     }
     
+    @FXML
+    private void openLogs() {
+        if (!Session.isAdmin()) return;
+        try {
+            Stage stage = (Stage) userTextField.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("logs.fxml"));
+            Parent root = loader.load();
+            stage.setScene(new Scene(root, 800, 600));
+            stage.setTitle("Logging History");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     private void applyRolePermissions() {
         boolean admin = Session.isAdmin();
 
@@ -350,6 +367,10 @@ public class SecondaryController {
         if (metricsBtn != null) {
             metricsBtn.setVisible(admin);
             metricsBtn.setManaged(admin);
+        
+        if (logsBtn != null) {
+            logsBtn.setVisible(admin);
+            logsBtn.setManaged(admin);
         }
     }
     
