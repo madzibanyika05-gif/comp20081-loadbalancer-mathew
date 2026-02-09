@@ -12,7 +12,7 @@ import com.mycompany.javafxapplication1.AppLogger;
  * JavaFX App
  */
 public class App extends Application {
-
+    private static Scene scene;
     @Override
     public void start(Stage stage) throws IOException {
 
@@ -49,9 +49,20 @@ public class App extends Application {
             stage.setTitle("Primary View");
         }
 
-        Scene scene = new Scene(root, 640, 480);
+        scene = new Scene(root, 640, 480);
         stage.setScene(scene);
         stage.show();
+    }
+    
+    public static void setRoot(String fxml) throws IOException {
+        FXMLLoader loader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
+        Parent root = loader.load();
+        if ("secondary".equals(fxml) && Session.isLoggedIn()) {
+            SecondaryController controller = loader.getController();
+            controller.initialise(Session.getUsername());
+        }
+
+        scene.setRoot(root);
     }
 
     public static void main(String[] args) {

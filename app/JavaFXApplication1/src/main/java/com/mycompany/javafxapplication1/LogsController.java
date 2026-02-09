@@ -35,6 +35,10 @@ public class LogsController {
 
     @FXML
     private void goBack(ActionEvent event) {
-        App.setRoot("secondary");
+        try {
+            App.setRoot("secondary");
+        } catch (IOException e) {
+            logsArea.setText("ERROR: couldn't return.\n" + e.getMessage());
+        }
     }
 }
