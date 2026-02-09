@@ -45,4 +45,20 @@ public class AppLogger {
     public static void metric(String name, long ms) {
         writeLine("METRIC", name + " took " + ms + "ms");
     }
+    
+    public static String readLogTail(int maxLines) throws IOException {
+        java.nio.file.Path p = java.nio.file.Paths.get("app.log");
+
+        if (!java.nio.file.Files.exists(p)) {
+            return "No log file found (app.log).";
+        }
+        java.util.List<String> lines = java.nio.file.Files.readAllLines(p, java.nio.charset.StandardCharsets.UTF_8);
+
+        int from = Math.max(0, lines.size() - maxLines);
+        StringBuilder sb = new StringBuilder();
+        for (int i = from; i < lines.size(); i++) {
+            sb.append(lines.get(i)).append("\n");
+        }
+        return sb.toString();
+    }
 }
