@@ -17,6 +17,7 @@
 <VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/25.0.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.javafxapplication1.SecondaryController">
     <children>
         <Label text="Users List" />
+     <Button fx:id="metricsBtn" onAction="#openMetrics" text="Performance Metrics" />
       <GridPane>
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -68,7 +69,6 @@
         <ChoiceBox fx:id="permChoice" />
         <Button onAction="#shareSelectedFile" text="Share" />
         <Button onAction="#revokeSelectedFile" text="Revoke" />
-        <Button fx:id="metricsBtn" onAction="#openMetrics" text="Performance Metrics" />
         <Button fx:id="deleteUserBtn" onAction="#deleteSelectedUser" text="Delete Selected User" />
         <Button onAction="#switchToPrimary" text="Return to Login" />
     </HBox>
