@@ -13,6 +13,7 @@ com/mycompany/javafxapplication1/FileService.class
 com/mycompany/javafxapplication1/RegisterController.class
 com/mycompany/javafxapplication1/Configuration.class
 com/mycompany/javafxapplication1/CryptUtil.class
+com/mycompany/javafxapplication1/LogsController.class
 com/mycompany/javafxapplication1/Metrics.class
 com/mycompany/javafxapplication1/FileService$LbReply.class
 com/mycompany/javafxapplication1/App.class

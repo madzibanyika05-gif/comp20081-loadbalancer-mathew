@@ -368,7 +368,6 @@ public class SecondaryController {
             metricsBtn.setVisible(admin);
             metricsBtn.setManaged(admin);
         
-        if (logsBtn != null) {
             logsBtn.setVisible(admin);
             logsBtn.setManaged(admin);
         }
