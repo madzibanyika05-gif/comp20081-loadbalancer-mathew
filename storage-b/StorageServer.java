@@ -162,9 +162,14 @@ public class StorageServer {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        int port = (args.length >= 1) ? Integer.parseInt(args[0]) : 9101;
-        Path baseDir = Paths.get(".").toAbsolutePath().normalize();
-        new StorageServer(baseDir).serve(port);
+    public static void main(String[] args) throws Exception {
+    	int port = (args.length >= 1) ? Integer.parseInt(args[0]) : 9101;
+    	Path baseDir;
+    	if (args.length >= 2) {
+            baseDir = Paths.get(args[1]).toAbsolutePath().normalize();
+    	} else {
+        baseDir = Paths.get(".").toAbsolutePath().normalize();
+    	}
+    	new StorageServer(baseDir).serve(port);
     }
 }
