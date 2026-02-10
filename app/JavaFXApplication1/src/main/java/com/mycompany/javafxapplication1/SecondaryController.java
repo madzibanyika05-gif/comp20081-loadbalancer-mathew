@@ -26,6 +26,7 @@ import com.mycompany.javafxapplication1.Session;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Label;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 
 
 public class SecondaryController {
@@ -67,13 +68,25 @@ public class SecondaryController {
     private Button logsBtn;
     
     @FXML
-    private ChoiceBox<String> algoChoice;
+    private ComboBox<String> algCombo;
     
     @FXML
     private void applyAlgorithm() {
-        String alg = algoChoice.getValue();
-        Session.setLbAlgorithm(alg);
-        AppLogger.info("LB_ALGO_SET user=" + Session.getUsername() + " alg=" + alg);
+        String user = Session.getUsername();
+        String alg = algCombo.getValue();
+
+        if (user == null || alg == null || alg.isBlank()) return;
+
+        try {
+            FileService.setLoadBalancerAlgorithm(user, alg);
+
+            Session.setLbAlgorithm(alg);
+
+            AppLogger.info("LB_ALGO_SET user=" + user + " alg=" + alg);
+        } catch (Exception e) {
+            AppLogger.error("LB_ALGO_SET failed user=" + user + " alg=" + alg, e);
+            customTextField.setText("ERROR: couldn't set algorithm");
+        }
     }
 
     @FXML
@@ -412,8 +425,13 @@ public class SecondaryController {
         applyRolePermissions();
         permChoice.getItems().setAll("READ", "WRITE");
         permChoice.setValue("READ");
-        algoChoice.getItems().setAll("RR", "RANDOM", "FCFS");
-        algoChoice.setValue(Session.getLbAlgorithm());
+        algCombo.getItems().setAll("ROUND_ROBIN", "FCFS", "PRIORITY");
+        String savedAlg = Session.getLbAlgorithm();
+        if (savedAlg == null || savedAlg.isBlank()) savedAlg = "ROUND_ROBIN";
+        if (!savedAlg.equals("ROUND_ROBIN") && !savedAlg.equals("FCFS") && !savedAlg.equals("PRIORITY")) {
+            savedAlg = "ROUND_ROBIN";
+        }
+        algCombo.setValue(savedAlg);
         userTextField.setText(username);
         try {
             if (!FileService.fileExists(username, "welcome.txt")) {// only create welcome.txt if it doesn't already exist

@@ -238,6 +238,19 @@ public class FileService {
         }
     }
     
+    public static void setLoadBalancerAlgorithm(String username, String algorithm) throws IOException {
+        try (Socket s = new Socket(LB_HOST, LB_PORT)) {
+            OutputStream out = s.getOutputStream();
+            InputStream in = s.getInputStream();
+            sendLine(out, "SETALG " + username + " " + algorithm);
+            s.shutdownOutput();
+            String resp = readLine(in);
+            if (resp == null || !resp.startsWith("OK")) {
+                throw new IOException("SETALG failed: " + resp);
+            }
+        }
+    }
+    
     public static String fetchLoadBalancerMetrics() throws IOException {
         try (Socket s = new Socket("localhost", 9000)) {
             s.setSoTimeout(2000);

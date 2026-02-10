@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ComboBox?>
 
 <VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/25.0.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.javafxapplication1.SecondaryController">
     <children>
@@ -22,7 +23,7 @@
             <Button fx:id="metricsBtn" onAction="#openMetrics" text="Performance Metrics" />
             <Button fx:id="logsBtn" onAction="#openLogs" text="Logging History" />
             <Label text="Algorithm:" />
-            <ChoiceBox fx:id="algoChoice" />
+            <ComboBox fx:id="algCombo" prefWidth="160" />
             <Button text="Apply" onAction="#applyAlgorithm" />
         </children>
     </HBox>
