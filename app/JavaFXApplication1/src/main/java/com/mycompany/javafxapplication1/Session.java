@@ -13,6 +13,7 @@ public final class Session {
 
     private static String username;
     private static String role;
+    private static String lbAlgorithm = "RR";
 
     private Session() {
         // prevent instantiation
@@ -44,5 +45,13 @@ public final class Session {
         username = null;
         role = null;
         LocalSQLiteDB.clearSession();
+    }
+    
+    public static void setLbAlgorithm(String alg) {
+        lbAlgorithm = (alg == null || alg.isBlank()) ? "RR" : alg;
+    }
+    
+    public static String getLbAlgorithm() {
+        return lbAlgorithm;
     }
 }

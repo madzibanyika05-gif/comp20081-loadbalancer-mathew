@@ -25,7 +25,7 @@ import com.mycompany.javafxapplication1.AppLogger;
 import com.mycompany.javafxapplication1.Session;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Label;
-
+import javafx.scene.control.ChoiceBox;
 
 
 public class SecondaryController {
@@ -65,6 +65,16 @@ public class SecondaryController {
     
     @FXML
     private Button logsBtn;
+    
+    @FXML
+    private ChoiceBox<String> algoChoice;
+    
+    @FXML
+    private void applyAlgorithm() {
+        String alg = algoChoice.getValue();
+        Session.setLbAlgorithm(alg);
+        AppLogger.info("LB_ALGO_SET user=" + Session.getUsername() + " alg=" + alg);
+    }
 
     @FXML
     private void RefreshBtnHandler(ActionEvent event){
@@ -402,6 +412,8 @@ public class SecondaryController {
         applyRolePermissions();
         permChoice.getItems().setAll("READ", "WRITE");
         permChoice.setValue("READ");
+        algoChoice.getItems().setAll("RR", "RANDOM", "FCFS");
+        algoChoice.setValue(Session.getLbAlgorithm());
         userTextField.setText(username);
         try {
             if (!FileService.fileExists(username, "welcome.txt")) {// only create welcome.txt if it doesn't already exist

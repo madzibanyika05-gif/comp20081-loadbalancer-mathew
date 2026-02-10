@@ -156,7 +156,7 @@ public class FileService {
             OutputStream out = s.getOutputStream();
             InputStream in = s.getInputStream();
 
-            sendLine(out, "WRITE " + username + " " + filename + " " + bytes.length);
+            sendLine(out, "WRITE " + username + " " + filename + " " + bytes.length + " ALG=" + Session.getLbAlgorithm());
             out.write(bytes);
             out.flush();
             s.shutdownOutput();
@@ -172,7 +172,7 @@ public class FileService {
             OutputStream out = s.getOutputStream();
             InputStream in = s.getInputStream();
 
-            sendLine(out, "READ " + username + " " + filename);
+            sendLine(out, "READ " + username + " " + filename + " ALG=" + Session.getLbAlgorithm());
             s.shutdownOutput();
 
             String hdr = readLine(in);
@@ -200,7 +200,7 @@ public class FileService {
             OutputStream out = s.getOutputStream();
             InputStream in = s.getInputStream();
 
-            sendLine(out, "DELETE " + username + " " + filename);
+            sendLine(out, "DELETE " + username + " " + filename + " ALG=" + Session.getLbAlgorithm());
             s.shutdownOutput();
 
             String resp = readLine(in);
@@ -214,7 +214,7 @@ public class FileService {
             OutputStream out = s.getOutputStream();
             InputStream in = s.getInputStream();
 
-            sendLine(out, "LIST " + username);
+            sendLine(out, "LIST " + username + " ALG=" + Session.getLbAlgorithm());
             s.shutdownOutput();
 
             String hdr = readLine(in);

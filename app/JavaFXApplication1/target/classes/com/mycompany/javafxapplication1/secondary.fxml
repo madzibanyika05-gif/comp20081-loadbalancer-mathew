@@ -21,6 +21,9 @@
         <children>
             <Button fx:id="metricsBtn" onAction="#openMetrics" text="Performance Metrics" />
             <Button fx:id="logsBtn" onAction="#openLogs" text="Logging History" />
+            <Label text="Algorithm:" />
+            <ChoiceBox fx:id="algoChoice" />
+            <Button text="Apply" onAction="#applyAlgorithm" />
         </children>
     </HBox>
       <GridPane>
@@ -56,7 +59,6 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-             
             <Button fx:id="refreshBtn" mnemonicParsing="false" onAction="#RefreshBtnHandler" text="Refresh" />
             <Button onAction="#deleteCustomFile" text="Delete File" />
             <Button onAction="#saveCustomData" text="Save" />
