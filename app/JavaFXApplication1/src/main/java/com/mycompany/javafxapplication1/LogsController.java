@@ -36,7 +36,16 @@ public class LogsController {
     @FXML
     private void goBack(ActionEvent event) {
         try {
-            App.setRoot("secondary");
+            javafx.stage.Stage stage = (javafx.stage.Stage) logsArea.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader =
+                    new javafx.fxml.FXMLLoader(getClass().getResource("secondary.fxml"));
+            javafx.scene.Parent root = loader.load();
+
+            SecondaryController controller = loader.getController();
+            controller.initialise(Session.getUsername());
+            stage.setScene(new javafx.scene.Scene(root, 900, 650));
+            stage.setTitle("Show Users");
+
         } catch (IOException e) {
             logsArea.setText("ERROR: couldn't return.\n" + e.getMessage());
         }
