@@ -30,7 +30,7 @@ public final class Metrics {
 
     public static String snapshot() {
         StringBuilder sb = new StringBuilder();
-        sb.append("=== METRICS SNAPSHOT ===\n");
+        sb.append(" Performance metrics \n");
 
         for (String op : counts.keySet()) {
             long c = counts.get(op).sum();

@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class FileService {
 
-    private static final String LB_HOST = "localhost";
+    private static final String LB_HOST = "load-balancer";
     private static final int LB_PORT = 9000;
     
     private static final int CHUNK_SIZE = 64 * 1024;
@@ -252,7 +252,7 @@ public class FileService {
     }
     
     public static String fetchLoadBalancerMetrics() throws IOException {
-        try (Socket s = new Socket("localhost", 9000)) {
+        try (Socket s = new Socket(LB_HOST, LB_PORT)) {
             s.setSoTimeout(2000);
             OutputStream out = s.getOutputStream();
             InputStream in = s.getInputStream();

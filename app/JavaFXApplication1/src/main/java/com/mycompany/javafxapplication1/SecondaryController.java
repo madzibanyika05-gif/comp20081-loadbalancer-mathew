@@ -27,7 +27,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.Label;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
-
+import javafx.scene.control.TableCell;
+import javafx.scene.layout.HBox;
 
 public class SecondaryController {
     
@@ -35,7 +36,7 @@ public class SecondaryController {
     private TextField userTextField;
     
     @FXML
-    private TableView dataTableView;
+    private TableView<User> dataTableView;
 
     @FXML
     private Button secondaryButton;
@@ -484,8 +485,67 @@ public class SecondaryController {
 
         TableColumn<User, String> roleCol = new TableColumn<>("Role");
         roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
+        
+        TableColumn<User, Void> actionsCol = new TableColumn<>("Actions");
+        actionsCol.setCellFactory(col -> new TableCell<>() {
+            private final Button makeAdminBtn = new Button("Make Admin");
+            private final Button removeAdminBtn = new Button("Remove Admin");
+            private final HBox box = new HBox(8, makeAdminBtn, removeAdminBtn);
+            {
+                makeAdminBtn.setOnAction(e -> {
+                    if (!Session.isAdmin()) return;
+                    User u = getTableView().getItems().get(getIndex());
+                    if (u == null) return;
+                    String target = u.getUser();
+                    MySQLDB db = new MySQLDB();
+                    boolean ok = db.promoteToAdmin(target);
 
+                    if (ok) {
+                        AppLogger.info("ROLE_PROMOTE target=" + target + " by=" + Session.getUsername());
+                        getTableView().setItems(db.getDataFromMySQL());
+                    } else {
+                        AppLogger.warn("ROLE_PROMOTE failed target=" + target);
+                    }
+                });
+                removeAdminBtn.setOnAction(e -> {
+                    if (!Session.isAdmin()) return;
+                    User u = getTableView().getItems().get(getIndex());
+                    if (u == null) return;
+                    String target = u.getUser();
+                    //demote themselves prevention
+                    if (target.equalsIgnoreCase(Session.getUsername())) {
+                        AppLogger.warn("ADMIN tried to demote self: " + target);
+                        return;
+                    }
+                    MySQLDB db = new MySQLDB();
+                    boolean ok = db.demoteToUser(target);
+
+                    if (ok) {
+                        AppLogger.info("ROLE_DEMOTE target=" + target + " by=" + Session.getUsername());
+                        getTableView().setItems(db.getDataFromMySQL());
+                    } else {
+                        AppLogger.warn("ROLE_DEMOTE failed target=" + target);
+                    }
+                });
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || !Session.isAdmin()) {
+                    setGraphic(null);
+                    return;
+                }
+                User u = getTableView().getItems().get(getIndex());
+                if (u != null) {
+                    boolean isAdminRow = "ADMIN".equalsIgnoreCase(u.getRole());
+                    makeAdminBtn.setDisable(isAdminRow);
+                    removeAdminBtn.setDisable(!isAdminRow);
+                }
+                setGraphic(box);
+            }
+        });
         dataTableView.setItems(data);
-        dataTableView.getColumns().addAll(userCol, passCol, roleCol);
+        dataTableView.getColumns().addAll(userCol, passCol, roleCol, actionsCol);
     }
 }

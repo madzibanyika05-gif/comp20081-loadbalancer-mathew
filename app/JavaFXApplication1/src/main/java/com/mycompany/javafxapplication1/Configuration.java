@@ -24,9 +24,9 @@ public final class Configuration {
         Boolean.parseBoolean(System.getenv().getOrDefault("SIM_DELAY", "false")); //artificial delay affects
     
     public static final int DELAY_MIN_MS =
-        Integer.parseInt(System.getenv().getOrDefault("DELAY_MIN_MS", "30000")); //3 to
+        Integer.parseInt(System.getenv().getOrDefault("DELAY_MIN_MS", "300")); //0.3 to
     public static final int DELAY_MAX_MS =
-        Integer.parseInt(System.getenv().getOrDefault("DELAY_MAX_MS", "90000"));//9 second delay
+        Integer.parseInt(System.getenv().getOrDefault("DELAY_MAX_MS", "900"));//0.9 second delay
     
     public static final int CHUNK_SIZE_BYTES =
         Integer.parseInt(System.getenv().getOrDefault("CHUNK_SIZE_BYTES", "262144")); //256KB

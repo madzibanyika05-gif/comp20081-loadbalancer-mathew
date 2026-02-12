@@ -287,7 +287,7 @@ public class MySQLDB {
         return null;
     }
 
-    // permission to read or write
+    //permission to read or write
     public boolean hasPermission(String owner, String filename, String grantee, String neededPerm) {
         if (owner.equalsIgnoreCase(grantee)) return true; //owner always alloud 
 
@@ -301,5 +301,31 @@ public class MySQLDB {
             return perm.equals("READ") || perm.equals("WRITE");
         }
         return perm.equals("WRITE");
+    }
+    
+    public boolean setUserRole(String targetUsername, String newRole) {
+        if (targetUsername == null || targetUsername.isBlank()) return false;
+        newRole = (newRole == null) ? "" : newRole.toUpperCase();
+        if (!newRole.equals("ADMIN") && !newRole.equals("USER")) return false;
+        String sql = "UPDATE users SET role = ? WHERE username = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, newRole);
+            stmt.setString(2, targetUsername);
+
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean promoteToAdmin(String targetUsername) {
+        return setUserRole(targetUsername, "ADMIN");
+    }
+    public boolean demoteToUser(String targetUsername) {
+        return setUserRole(targetUsername, "USER");
     }
 }
